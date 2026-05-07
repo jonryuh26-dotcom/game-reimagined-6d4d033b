@@ -273,7 +273,7 @@ export default function GameCanvas() {
         ctx.restore();
       });
 
-      drawPlayer(ctx, gameState.player, cam);
+      drawPlayer(ctx, gameState.player, cam, time);
 
       if (gameState.player.moving && gameState.player.targetX !== undefined) {
         const tx = gameState.player.targetX;
