@@ -142,3 +142,75 @@
     color: var(--color-foreground);
   }
 }
+
+/* === Dragon M — Oriental theme tokens === */
+:root {
+  --gradient-night: radial-gradient(ellipse at 50% 30%, oklch(0.18 0.05 280) 0%, oklch(0.08 0.03 270) 60%, oklch(0.04 0.02 260) 100%);
+  --gradient-crimson: linear-gradient(135deg, oklch(0.55 0.22 25), oklch(0.35 0.18 15));
+  --gradient-gold: linear-gradient(135deg, oklch(0.85 0.18 85), oklch(0.65 0.22 55));
+  --shadow-elegant: 0 18px 50px -20px oklch(0.55 0.22 25 / 0.5), 0 4px 14px -4px oklch(0 0 0 / 0.4);
+}
+
+.font-oriental {
+  font-family: "Noto Serif JP", "ZCOOL XiaoWei", "Cinzel", serif;
+  letter-spacing: 0.04em;
+}
+
+.text-gradient-gold {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-crimson {
+  background: var(--gradient-crimson);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.aura-gold {
+  box-shadow: 0 0 0 1px oklch(0.75 0.18 80 / 0.5), 0 0 30px oklch(0.75 0.18 80 / 0.35);
+}
+
+.ink-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, oklch(0.75 0.18 80 / 0.7), transparent);
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fade-in-up 0.7s ease-out both; }
+
+@keyframes pulse-aura {
+  0%, 100% { box-shadow: 0 0 0 1px oklch(0.75 0.18 80 / 0.5), 0 0 24px oklch(0.75 0.18 80 / 0.3); }
+  50%      { box-shadow: 0 0 0 1px oklch(0.85 0.2 80 / 0.7), 0 0 40px oklch(0.85 0.2 80 / 0.55); }
+}
+.animate-pulse-aura { animation: pulse-aura 2.4s ease-in-out infinite; }
+
+@keyframes mist {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(2%, -1%); }
+}
+.animate-mist { animation: mist 12s ease-in-out infinite; }
+
+@keyframes dragon-fly {
+  0%   { transform: translateX(-15%) translateY(0) rotate(-3deg); }
+  50%  { transform: translateX(50%) translateY(-20px) rotate(2deg); }
+  100% { transform: translateX(115%) translateY(0) rotate(-3deg); }
+}
+.animate-dragon { animation: dragon-fly 14s ease-in-out infinite; }
+
+@keyframes lantern-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50%      { transform: rotate(3deg); }
+}
+.animate-lantern { animation: lantern-sway 4s ease-in-out infinite; transform-origin: top center; }
+
+@keyframes ember-rise {
+  0%   { transform: translateY(0) scale(1); opacity: 0.8; }
+  100% { transform: translateY(-90vh) scale(0.4); opacity: 0; }
+}
