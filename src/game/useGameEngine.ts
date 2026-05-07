@@ -1497,6 +1497,17 @@ export function useGameEngine(viewW: number, viewH: number) {
             }
             return true;
           }
+          // Chest key: jogador OU pets coletam
+          if (gi.kind === 'chest_key') {
+            const petGrabKey = collectorPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60);
+            if (dPlayer < 26 || petGrabKey) {
+              const slot = newBag.find(i => i.id === 'chest_key');
+              if (slot) slot.count += 1;
+              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: '+🔑' });
+              return false;
+            }
+            return true;
+          }
           // Eggs: SOMENTE jogador coleta (pets ignoram)
           const isEgg = gi.kind.startsWith('egg_');
           if (isEgg) {
