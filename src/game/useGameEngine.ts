@@ -1171,6 +1171,29 @@ export function useGameEngine(viewW: number, viewH: number) {
         demons.forEach(demon => {
           if (!demon.active) return;
           if (now - demon.spawnTime > 60000) { demon.active = false; return; }
+          // Demons no mapa atual também atacam o jogador
+          if (demon.mapId === prev.currentMap) {
+            const dPl = dist(demon, player);
+            if (dPl < 22) {
+              const last = (demon as { _lastPlAtk?: number })._lastPlAtk ?? 0;
+              if (now - last > 1100) {
+                (demon as { _lastPlAtk?: number })._lastPlAtk = now;
+                const dmgMin = demon.isElite ? DEMON_ELITE_DMG_MIN : DEMON_DMG_MIN;
+                const dmgMax = demon.isElite ? DEMON_ELITE_DMG_MAX : DEMON_DMG_MAX;
+                const dmg = (dmgMin + Math.floor(Math.random() * (dmgMax - dmgMin + 1))) * 4;
+                player.hp = Math.max(0, player.hp - dmg);
+                floatingDamages.push({ id: `fd_dpl_${now}_${demon.id}`, x: player.x, y: player.y - 24, text: `-${dmg}`, color: '#dc2626', bornAt: now });
+              }
+            } else if (dPl < 220 && !demon.targetPet) {
+              const ddx = player.x - demon.x; const ddy = player.y - demon.y;
+              const len = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+              const demonSpeed = 2.5 + difficultyTier * DIFFICULTY_SPEED_BONUS_PER_TIER;
+              demon.x += (ddx / len) * demonSpeed; demon.y += (ddy / len) * demonSpeed;
+              demon.direction = Math.abs(ddx) > Math.abs(ddy) ? (ddx > 0 ? 'right' : 'left') : (ddy > 0 ? 'down' : 'up');
+              demon.animFrame += 1;
+              return;
+            }
+          }
           if (!demon.targetPet) {
             const farmingPets = pets.filter(p => p.assignedMap === demon.mapId && (p.state === 'farming' || p.state === 'sleeping') && (p.state as string) !== 'dead');
             if (farmingPets.length > 0) {
