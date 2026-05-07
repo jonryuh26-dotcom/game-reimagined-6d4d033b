@@ -760,6 +760,14 @@ function GameUI({
                           </div>
                         </div>
                       )}
+                      {item.id.startsWith('egg_') && (
+                        <button
+                          className="w-full py-1.5 rounded bg-amber-600 text-white text-[10px] font-bold active:scale-95"
+                          onClick={() => onOpenEgg(item.id as 'egg_common')}
+                        >
+                          Abrir Ovo 🥚
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
