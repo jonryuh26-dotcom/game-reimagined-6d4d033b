@@ -264,6 +264,16 @@ export function useGameEngine(viewW: number, viewH: number) {
         bornAt: now, expiresAt: now + 60000,
       });
     }
+    // Chave de baú: 20% drop
+    if (Math.random() < 0.20) {
+      pendingDropsRef.current.push({
+        id: `gi_key_${now}_${Math.random().toString(36).slice(2,6)}`,
+        x: mob.x + (Math.random() - 0.5) * 16,
+        y: mob.y + (Math.random() - 0.5) * 16,
+        mapId, kind: 'chest_key',
+        bornAt: now, expiresAt: now + 90000,
+      });
+    }
     // Egg drop: chance escala com nível do mob
     const baseEgg = mob.variant === 'alpha' ? 0.10 : mob.variant === 'corrupted' ? 0.06 : mob.variant === 'elite' ? 0.04 : 0.015;
     const lvBonus = Math.min(0.20, mob.level * 0.004);
@@ -283,7 +293,7 @@ export function useGameEngine(viewW: number, viewH: number) {
         mapId, kind: tier.id as GroundItem['kind'],
         bornAt: now, expiresAt: now + 90000,
       });
-      queueEvent('item_drop', `🥚 Ovo ${tier.label} dropou!`, '🥚', tier.color);
+      queueEvent('item_drop', `🥚 Você dropou um ovo ${tier.label}!`, '🥚', '#a855f7');
     }
   };
 
