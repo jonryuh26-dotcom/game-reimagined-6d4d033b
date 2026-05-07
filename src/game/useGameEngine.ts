@@ -441,7 +441,7 @@ export function useGameEngine(viewW: number, viewH: number) {
       if (!slot || slot.count <= 0) return prev;
 
       const successChance: Record<string, number> = {
-        egg_common: 0, egg_rare: 0.45, egg_magic: 0.65, egg_epic: 0.80, egg_legendary: 0.92, egg_mythic: 1.0,
+        egg_common: 0, egg_rare: 0.10, egg_magic: 0.18, egg_epic: 0.30, egg_legendary: 0.50, egg_mythic: 0.75,
       };
       const fragmentReward: Record<string, number> = {
         egg_common: 1, egg_rare: 3, egg_magic: 5, egg_epic: 8, egg_legendary: 14, egg_mythic: 25,
