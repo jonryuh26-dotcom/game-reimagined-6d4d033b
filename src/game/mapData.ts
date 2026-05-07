@@ -438,8 +438,8 @@ export const MAPS: Record<MapId, MapConfig> = {
     collisionZones: [],
     waterZones: [],
     stairs: [
-      { x: 480, y: 1240, targetMap: 'village', targetX: 760, targetY: 380, label: '🪜 Voltar à Vila' },
-      { x: 480, y: 80,  targetMap: 'underground_2', targetX: 480, targetY: 1180, label: '🪜 Descer (Lv 10-25)' },
+      { x: MAP_WIDTH - 80, y: 360, targetMap: 'village', targetX: VILLAGE_WIDTH - 320, targetY: VILLAGE_HEIGHT / 2 - 200, label: '🪜 Voltar à Vila' },
+      { x: MAP_WIDTH - 80, y: 720, targetMap: 'underground_2', targetX: 480, targetY: 1180, label: '🪜 Descer (Lv 35-55)' },
     ],
     npcPositions: [],
     demonSpawns: genDemonSpawns(8, 160, 800, 200, 1100),
@@ -454,8 +454,8 @@ export const MAPS: Record<MapId, MapConfig> = {
     collisionZones: [],
     waterZones: [],
     stairs: [
-      { x: 480, y: 1240, targetMap: 'underground_1', targetX: 480, targetY: 100, label: '🪜 Subir' },
-      { x: 480, y: 80,  targetMap: 'underground_3', targetX: 480, targetY: 1180, label: '🪜 Descer (Lv 25-50)' },
+      { x: MAP_WIDTH - 80, y: 360, targetMap: 'underground_1', targetX: MAP_WIDTH - 140, targetY: 720, label: '🪜 Subir' },
+      { x: MAP_WIDTH - 80, y: 720, targetMap: 'underground_3', targetX: 480, targetY: 1180, label: '🪜 Descer (Lv 40-70)' },
     ],
     npcPositions: [],
     demonSpawns: genDemonSpawns(9, 160, 800, 200, 1100),
@@ -470,11 +470,44 @@ export const MAPS: Record<MapId, MapConfig> = {
     collisionZones: [],
     waterZones: [],
     stairs: [
-      { x: 480, y: 1240, targetMap: 'underground_2', targetX: 480, targetY: 100, label: '🪜 Subir' },
+      { x: MAP_WIDTH - 80, y: 360, targetMap: 'underground_2', targetX: MAP_WIDTH - 140, targetY: 720, label: '🪜 Subir' },
     ],
     npcPositions: [],
     demonSpawns: genDemonSpawns(10, 160, 800, 200, 1100),
     bossSpawn: { x: 480, y: 300 },
+  },
+  // ===== Mapas novos do portal direito =====
+  purplewilds: {
+    id: 'purplewilds', name: 'Bosque Sombrio', image: mapPurpleWilds, color: '#a855f7',
+    playerStart: { x: 480, y: 1100 },
+    coins: genCoins(28, 150, 800, 250, 1150),
+    chests: [{ x: 380, y: 500 }, { x: 640, y: 600 }, { x: 480, y: 850 }, { x: 250, y: 750 }, { x: 720, y: 400 }],
+    portals: [], goldBonus: 1.9, rubyBonus: 2.2, demonCount: 9, chestRespawnTime: CHEST_RESPAWN_DEFAULT,
+    walkableZones: [{ x: 0, y: 0, w: MAP_WIDTH, h: MAP_HEIGHT }],
+    collisionZones: [],
+    waterZones: [],
+    stairs: [
+      { x: MAP_WIDTH - 80, y: MAP_HEIGHT / 2, targetMap: 'village', targetX: VILLAGE_WIDTH - 320, targetY: VILLAGE_HEIGHT / 2, label: '🌀 Voltar à Vila' },
+    ],
+    npcPositions: [{ x: 400, y: 600 }],
+    demonSpawns: genDemonSpawns(9, 150, 800, 250, 1100),
+    bossSpawn: { x: 480, y: 480 },
+  },
+  infernal: {
+    id: 'infernal', name: 'Reino Infernal', image: mapInfernal, color: '#dc2626',
+    playerStart: { x: 480, y: 1100 },
+    coins: genCoins(30, 150, 800, 250, 1150),
+    chests: [{ x: 360, y: 520 }, { x: 660, y: 460 }, { x: 480, y: 820 }, { x: 280, y: 760 }, { x: 700, y: 880 }],
+    portals: [], goldBonus: 2.6, rubyBonus: 2.4, demonCount: 11, chestRespawnTime: CHEST_RESPAWN_DEFAULT,
+    walkableZones: [{ x: 0, y: 0, w: MAP_WIDTH, h: MAP_HEIGHT }],
+    collisionZones: [],
+    waterZones: [],
+    stairs: [
+      { x: MAP_WIDTH - 80, y: MAP_HEIGHT / 2, targetMap: 'village', targetX: VILLAGE_WIDTH - 320, targetY: VILLAGE_HEIGHT / 2 + 200, label: '🌀 Voltar à Vila' },
+    ],
+    npcPositions: [{ x: 400, y: 700 }],
+    demonSpawns: genDemonSpawns(11, 150, 800, 250, 1100),
+    bossSpawn: { x: 480, y: 500 },
   },
 };
 
