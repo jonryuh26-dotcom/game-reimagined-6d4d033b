@@ -462,6 +462,45 @@ function GameUI({
                     </div>
                   )}
 
+                  {/* AVATAR — escolha sprite + cor da roupa */}
+                  <div className="p-3 rounded-xl" style={cardStyle}>
+                    <div className="text-[10px] font-bold mb-2 tracking-wider" style={{ color: goldText }}>🎭 AVATAR</div>
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      {(['mage','dark'] as AvatarKind[]).map(k => (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => updateAvatar({ kind: k })}
+                          className="rounded-lg p-2 flex flex-col items-center gap-1 active:scale-95 transition"
+                          style={{
+                            background: avatar.kind === k ? 'linear-gradient(180deg,hsl(40 70% 30%),hsl(40 80% 18%))' : 'hsl(220 40% 8%)',
+                            border: `1px solid ${avatar.kind === k ? 'hsl(40 90% 70%)' : 'hsl(220 40% 25%)'}`,
+                          }}
+                        >
+                          <span className="text-2xl">{k === 'mage' ? '🧙‍♂️' : '🥷'}</span>
+                          <span className="text-[10px] text-white font-bold">{k === 'mage' ? 'Mago' : 'Sombra'}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="text-[9px] mb-1.5 text-gray-400">Cor da roupa</div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {AVATAR_PALETTE.map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          title={p.label}
+                          onClick={() => updateAvatar({ color: p.color })}
+                          className="h-9 rounded-md active:scale-90 transition"
+                          style={{
+                            background: p.color,
+                            border: avatar.color === p.color ? '2px solid hsl(40 95% 70%)' : '2px solid hsl(220 30% 20%)',
+                            boxShadow: avatar.color === p.color ? `0 0 8px ${p.color}` : 'none',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
                   {/* ATTRIBUTES + Radar Chart */}
                   <div className="p-3 rounded-xl" style={cardStyle}>
                     <div className="flex items-center justify-between mb-2">
