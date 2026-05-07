@@ -176,8 +176,12 @@ function createInitialState(mapId: MapId, viewW: number, viewH: number): GameSta
   const derived = profile && profileAttrs ? deriveStats(profile.classId, profileAttrs) : null;
   const baseHp = derived ? Math.round(derived.hp) : PLAYER_MAX_HP;
   const baseMp = derived ? Math.round(derived.mp) : PLAYER_MAX_MP;
+  const ownsBonus = (() => { try { return localStorage.getItem('idleRpg_ownsBonusSkill') === '1'; } catch { return false; } })();
   const initialSkills = profile
-    ? getClassSkills(profile.classId, level).map((s) => ({ id: s.id, cooldownUntil: 0 }))
+    ? [
+        ...getClassSkills(profile.classId, level).map((s) => ({ id: s.id, cooldownUntil: 0 })),
+        ...(ownsBonus ? [{ id: 'bonus_nova', cooldownUntil: 0 }] : []),
+      ]
     : [];
 
   return {
@@ -481,6 +485,22 @@ export function useGameEngine(viewW: number, viewH: number) {
       );
       queueEvent('item_drop', `Trocou 10 fragmentos por ${kind === 'hp_potion' ? 'poção de vida' : 'poção de mana'}`, '🔮', '#22c55e');
       return { ...prev, bag: newBag };
+    });
+  }, []);
+
+  // Compra a skill bônus (Nova Cristalina) por cristais — fica permanente em qualquer classe
+  const buyBonusSkill = useCallback(() => {
+    setGameState(prev => {
+      if (prev.skills.some(s => s.id === 'bonus_nova')) return prev;
+      const cost = 5;
+      if (prev.resources.crystal < cost) return prev;
+      try { localStorage.setItem('idleRpg_ownsBonusSkill', '1'); } catch {}
+      queueEvent('item_drop', '💠 Nova Cristalina adquirida!', '💠', '#22d3ee');
+      return {
+        ...prev,
+        resources: { ...prev.resources, crystal: prev.resources.crystal - cost },
+        skills: [...prev.skills, { id: 'bonus_nova', cooldownUntil: 0 }],
+      };
     });
   }, []);
 
@@ -1594,7 +1614,7 @@ export function useGameEngine(viewW: number, viewH: number) {
     teleportToMap, toggleUI, buyPetChest, buyChestType, buyPlanfyEgg, assignPetToMap,
     claimQuest, dismissAFK, revivePet, useTeleportScroll, darkMageSendPet, selectDarkMagePet, setPetFilter,
     logEvent, clearEvents,
-    selectMob, toggleAutoMode, setJoystick, useSkill, usePotion, openEgg, tradeFragments,
+    selectMob, toggleAutoMode, setJoystick, useSkill, usePotion, openEgg, tradeFragments, buyBonusSkill,
     setAutoHealThreshold, setAutoManaThreshold, toggleAutoPotion,
     refreshPlayerStats,
     nextDemonSpawnRef: lastDemonSpawn,

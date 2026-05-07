@@ -363,12 +363,6 @@ function GameUI({
         </div>
       )}
 
-      {/* Hint */}
-      {!state.chestOpened && !state.showMenu && (
-        <div className="fixed top-32 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg z-20 animate-fade-in" style={cardStyle}>
-          <span className="text-white text-[10px]">Encontre o baú e toque para abrir!</span>
-        </div>
-      )}
 
       {/* ========== DASHBOARD ========== */}
       {state.showMenu && (
