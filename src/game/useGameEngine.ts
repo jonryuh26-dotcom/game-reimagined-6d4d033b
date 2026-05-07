@@ -470,6 +470,7 @@ export function useGameEngine(viewW: number, viewH: number) {
     });
   }, []);
 
+  const setPetFilter = useCallback((filter: PetRarity | 'all') => {
     setGameState(prev => ({ ...prev, petQuestRarityFilter: filter }));
   }, []);
 
