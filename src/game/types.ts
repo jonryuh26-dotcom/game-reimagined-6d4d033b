@@ -261,7 +261,7 @@ export interface GroundItem {
   x: number;
   y: number;
   mapId: MapId;
-  kind: 'hp_potion' | 'mp_potion' | 'gold' | 'ruby';
+  kind: 'hp_potion' | 'mp_potion' | 'gold' | 'ruby' | 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic';
   amount?: number;
   expiresAt: number;
   bornAt: number;
