@@ -151,6 +151,12 @@ function GameUI({
 
   type Tab = 'status' | 'pets' | 'shop' | 'bag' | 'quest' | 'map' | 'boss' | 'dark' | 'report';
   const [tab, setTab] = useState<Tab>('status');
+  const [avatar, setAvatarState] = useState(() => loadAvatar());
+  const updateAvatar = (patch: Partial<typeof avatar>) => {
+    const next = { ...avatar, ...patch };
+    setAvatarState(next);
+    saveAvatar(next);
+  };
 
   const [statusFilter, setStatusFilter] = useState<'all' | 'alive' | 'dead' | 'busy' | 'free'>('all');
   const [mapFilter, setMapFilter] = useState<MapId | 'all'>('all');
