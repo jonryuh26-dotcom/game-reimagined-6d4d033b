@@ -36,6 +36,8 @@ interface GameUIProps {
   onSelectDarkMagePet: (petId: string | null) => void;
   onSetPetFilter: (filter: PetRarity | 'all') => void;
   onClearEvents: () => void;
+  onOpenEgg: (kind: 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic') => void;
+  onTradeFragments: (kind: 'hp_potion' | 'mp_potion') => void;
   nextDemonSpawnAt: number;
   onRefreshStats?: () => void;
 }
