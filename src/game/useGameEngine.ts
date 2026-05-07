@@ -67,9 +67,11 @@ function createWalkingNPCs(_mapId: MapId): WalkingNPC[] {
 const INITIAL_BAG: InventoryItem[] = [
   { id: 'teleport_scroll', name: 'Scroll de Teleporte', icon: '📜', count: 0 },
   { id: 'black_crystal', name: 'Cristal Negro', icon: '🖤', count: 0 },
+  { id: 'chest_key', name: 'Chave de Baú', icon: '🔑', count: 0 },
   { id: 'hp_potion', name: 'Poção de Vida', icon: '❤️', count: 8 },
   { id: 'mp_potion', name: 'Poção de Mana', icon: '💧', count: 5 },
   { id: 'fragments', name: 'Fragmentos de Ovo', icon: '🔮', count: 0 },
+  { id: 'bonus_aoe_skill', name: 'Skill: Nova Cristalina', icon: '💠', count: 0 },
   { id: 'egg_common', name: 'Ovo Comum', icon: '🥚', count: 0 },
   { id: 'egg_rare', name: 'Ovo Raro', icon: '🥚', count: 0 },
   { id: 'egg_magic', name: 'Ovo Mágico', icon: '🥚', count: 0 },
@@ -174,8 +176,12 @@ function createInitialState(mapId: MapId, viewW: number, viewH: number): GameSta
   const derived = profile && profileAttrs ? deriveStats(profile.classId, profileAttrs) : null;
   const baseHp = derived ? Math.round(derived.hp) : PLAYER_MAX_HP;
   const baseMp = derived ? Math.round(derived.mp) : PLAYER_MAX_MP;
+  const ownsBonus = (() => { try { return localStorage.getItem('idleRpg_ownsBonusSkill') === '1'; } catch { return false; } })();
   const initialSkills = profile
-    ? getClassSkills(profile.classId, level).map((s) => ({ id: s.id, cooldownUntil: 0 }))
+    ? [
+        ...getClassSkills(profile.classId, level).map((s) => ({ id: s.id, cooldownUntil: 0 })),
+        ...(ownsBonus ? [{ id: 'bonus_nova', cooldownUntil: 0 }] : []),
+      ]
     : [];
 
   return {
@@ -262,6 +268,16 @@ export function useGameEngine(viewW: number, viewH: number) {
         bornAt: now, expiresAt: now + 60000,
       });
     }
+    // Chave de baú: 20% drop
+    if (Math.random() < 0.20) {
+      pendingDropsRef.current.push({
+        id: `gi_key_${now}_${Math.random().toString(36).slice(2,6)}`,
+        x: mob.x + (Math.random() - 0.5) * 16,
+        y: mob.y + (Math.random() - 0.5) * 16,
+        mapId, kind: 'chest_key',
+        bornAt: now, expiresAt: now + 90000,
+      });
+    }
     // Egg drop: chance escala com nível do mob
     const baseEgg = mob.variant === 'alpha' ? 0.10 : mob.variant === 'corrupted' ? 0.06 : mob.variant === 'elite' ? 0.04 : 0.015;
     const lvBonus = Math.min(0.20, mob.level * 0.004);
@@ -281,7 +297,7 @@ export function useGameEngine(viewW: number, viewH: number) {
         mapId, kind: tier.id as GroundItem['kind'],
         bornAt: now, expiresAt: now + 90000,
       });
-      queueEvent('item_drop', `🥚 Ovo ${tier.label} dropou!`, '🥚', tier.color);
+      queueEvent('item_drop', `🥚 Você dropou um ovo ${tier.label}!`, '🥚', '#a855f7');
     }
   };
 
@@ -335,34 +351,36 @@ export function useGameEngine(viewW: number, viewH: number) {
     if (!chest || chest.opened) return;
     if (dist(s.player, chest) > 50) return;
 
-    if (chestIdx === 0 && !s.chestOpened) {
-      setGameState(prev => ({
-        ...prev, chestOpened: true,
-        chests: prev.chests.map((c, i) => i === chestIdx ? { ...c, opened: true, respawnAt: Date.now() + MAPS[prev.currentMap].chestRespawnTime } : c),
-        creature: { ...prev.creature, state: 'collecting' },
-        cycleStartTime: Date.now(), cycleTimer: 60000,
-        quests: prev.quests.map(q => q.type === 'open_chest' ? { ...q, progress: q.progress + 1, completed: q.progress + 1 >= q.target } : q),
-      }));
-    } else {
-      const mapCfg = MAPS[s.currentMap];
-      const rewards = generateChestRewards(mapCfg.goldBonus, mapCfg.rubyBonus);
-      const dropBlackCrystal = Math.random() < BLACK_CRYSTAL_DROP_CHANCE;
-      queueEvent('chest_opened', `Baú aberto: +${rewards.gold} ouro, +${rewards.ruby} rubi${dropBlackCrystal ? ', +Cristal Negro 🖤' : ''}`, '🎁', '#fbbf24');
-      if (dropBlackCrystal) queueEvent('item_drop', 'Cristal Negro coletado!', '🖤', '#a855f7');
-      setGameState(prev => ({
-        ...prev,
-        chests: prev.chests.map((c, i) => i === chestIdx ? { ...c, opened: true, respawnAt: Date.now() + MAPS[prev.currentMap].chestRespawnTime } : c),
-        resources: { ...prev.resources, gold: prev.resources.gold + rewards.gold, ruby: prev.resources.ruby + rewards.ruby, crystal: prev.resources.crystal + rewards.crystal },
-        bag: dropBlackCrystal
-          ? prev.bag.map(i => i.id === 'black_crystal' ? { ...i, count: i.count + 1 } : i)
-          : prev.bag,
-        quests: prev.quests.map(q => q.type === 'open_chest' ? { ...q, progress: q.progress + 1, completed: q.progress + 1 >= q.target } : q),
-      }));
-      const txt = dropBlackCrystal
-        ? `+${rewards.gold}🪙 +${rewards.ruby}💎 +🖤`
-        : `+${rewards.gold}🪙 +${rewards.ruby}💎`;
-      collectEffectsRef.current.push({ x: chest.x, y: chest.y, startTime: performance.now(), text: txt });
+    // Requer chave
+    const keySlot = s.bag.find(i => i.id === 'chest_key');
+    if (!keySlot || keySlot.count <= 0) {
+      queueEvent('item_drop', '🔒 Você precisa de uma chave 🔑 para abrir o baú', '🔒', '#ef4444');
+      return;
     }
+
+    const mapCfg = MAPS[s.currentMap];
+    const rewards = generateChestRewards(mapCfg.goldBonus, mapCfg.rubyBonus);
+    const dropBlackCrystal = Math.random() < BLACK_CRYSTAL_DROP_CHANCE;
+    queueEvent('chest_opened', `Baú aberto: +${rewards.gold} ouro, +${rewards.ruby} rubi${dropBlackCrystal ? ', +Cristal Negro 🖤' : ''}`, '🎁', '#fbbf24');
+    if (dropBlackCrystal) queueEvent('item_drop', 'Cristal Negro coletado!', '🖤', '#a855f7');
+    setGameState(prev => ({
+      ...prev,
+      chestOpened: true,
+      chests: prev.chests.map((c, i) => i === chestIdx ? { ...c, opened: true, respawnAt: Date.now() + MAPS[prev.currentMap].chestRespawnTime } : c),
+      cycleStartTime: prev.chestOpened ? prev.cycleStartTime : Date.now(),
+      cycleTimer: prev.chestOpened ? prev.cycleTimer : 60000,
+      resources: { ...prev.resources, gold: prev.resources.gold + rewards.gold, ruby: prev.resources.ruby + rewards.ruby, crystal: prev.resources.crystal + rewards.crystal },
+      bag: prev.bag.map(i => {
+        if (i.id === 'chest_key') return { ...i, count: i.count - 1 };
+        if (dropBlackCrystal && i.id === 'black_crystal') return { ...i, count: i.count + 1 };
+        return i;
+      }),
+      quests: prev.quests.map(q => q.type === 'open_chest' ? { ...q, progress: q.progress + 1, completed: q.progress + 1 >= q.target } : q),
+    }));
+    const txt = dropBlackCrystal
+      ? `+${rewards.gold}🪙 +${rewards.ruby}💎 +🖤`
+      : `+${rewards.gold}🪙 +${rewards.ruby}💎`;
+    collectEffectsRef.current.push({ x: chest.x, y: chest.y, startTime: performance.now(), text: txt });
   }, []);
 
   const logEvent = useCallback((type: GameEventType, message: string, icon: string, color: string) => {
@@ -427,7 +445,7 @@ export function useGameEngine(viewW: number, viewH: number) {
       if (!slot || slot.count <= 0) return prev;
 
       const successChance: Record<string, number> = {
-        egg_common: 0, egg_rare: 0.45, egg_magic: 0.65, egg_epic: 0.80, egg_legendary: 0.92, egg_mythic: 1.0,
+        egg_common: 0, egg_rare: 0.10, egg_magic: 0.18, egg_epic: 0.30, egg_legendary: 0.50, egg_mythic: 0.75,
       };
       const fragmentReward: Record<string, number> = {
         egg_common: 1, egg_rare: 3, egg_magic: 5, egg_epic: 8, egg_legendary: 14, egg_mythic: 25,
@@ -467,6 +485,22 @@ export function useGameEngine(viewW: number, viewH: number) {
       );
       queueEvent('item_drop', `Trocou 10 fragmentos por ${kind === 'hp_potion' ? 'poção de vida' : 'poção de mana'}`, '🔮', '#22c55e');
       return { ...prev, bag: newBag };
+    });
+  }, []);
+
+  // Compra a skill bônus (Nova Cristalina) por cristais — fica permanente em qualquer classe
+  const buyBonusSkill = useCallback(() => {
+    setGameState(prev => {
+      if (prev.skills.some(s => s.id === 'bonus_nova')) return prev;
+      const cost = 5;
+      if (prev.resources.crystal < cost) return prev;
+      try { localStorage.setItem('idleRpg_ownsBonusSkill', '1'); } catch {}
+      queueEvent('item_drop', '💠 Nova Cristalina adquirida!', '💠', '#22d3ee');
+      return {
+        ...prev,
+        resources: { ...prev.resources, crystal: prev.resources.crystal - cost },
+        skills: [...prev.skills, { id: 'bonus_nova', cooldownUntil: 0 }],
+      };
     });
   }, []);
 
@@ -1157,6 +1191,29 @@ export function useGameEngine(viewW: number, viewH: number) {
         demons.forEach(demon => {
           if (!demon.active) return;
           if (now - demon.spawnTime > 60000) { demon.active = false; return; }
+          // Demons no mapa atual também atacam o jogador
+          if (demon.mapId === prev.currentMap) {
+            const dPl = dist(demon, player);
+            if (dPl < 22) {
+              const last = (demon as { _lastPlAtk?: number })._lastPlAtk ?? 0;
+              if (now - last > 1100) {
+                (demon as { _lastPlAtk?: number })._lastPlAtk = now;
+                const dmgMin = demon.isElite ? DEMON_ELITE_DMG_MIN : DEMON_DMG_MIN;
+                const dmgMax = demon.isElite ? DEMON_ELITE_DMG_MAX : DEMON_DMG_MAX;
+                const dmg = (dmgMin + Math.floor(Math.random() * (dmgMax - dmgMin + 1))) * 4;
+                player.hp = Math.max(0, player.hp - dmg);
+                floatingDamages.push({ id: `fd_dpl_${now}_${demon.id}`, x: player.x, y: player.y - 24, text: `-${dmg}`, color: '#dc2626', bornAt: now });
+              }
+            } else if (dPl < 220 && !demon.targetPet) {
+              const ddx = player.x - demon.x; const ddy = player.y - demon.y;
+              const len = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+              const demonSpeed = 2.5 + difficultyTier * DIFFICULTY_SPEED_BONUS_PER_TIER;
+              demon.x += (ddx / len) * demonSpeed; demon.y += (ddy / len) * demonSpeed;
+              demon.direction = Math.abs(ddx) > Math.abs(ddy) ? (ddx > 0 ? 'right' : 'left') : (ddy > 0 ? 'down' : 'up');
+              demon.animFrame += 1;
+              return;
+            }
+          }
           if (!demon.targetPet) {
             const farmingPets = pets.filter(p => p.assignedMap === demon.mapId && (p.state === 'farming' || p.state === 'sleeping') && (p.state as string) !== 'dead');
             if (farmingPets.length > 0) {
@@ -1288,11 +1345,24 @@ export function useGameEngine(viewW: number, viewH: number) {
           m.animFrame += 1;
         });
 
-        // Player respawn on death
+        // Player respawn on death — sempre volta para o primeiro mapa (vila)
         if (player.hp <= 0) {
-          const ms = MAPS[prev.currentMap];
+          const ms = MAPS['village'];
           player.x = ms.playerStart.x; player.y = ms.playerStart.y;
           player.hp = player.maxHp; player.mp = player.maxMp;
+          if (prev.currentMap !== 'village') {
+            queueEvent('teleport', 'Você morreu! Voltando para a vila…', '💀', '#ef4444');
+            return {
+              ...prev, player, currentMap: 'village',
+              coins: createCoins('village'),
+              chests: MAPS['village'].chests.map((p, i) => ({ id: i, x: p.x, y: p.y, opened: false, respawnAt: null })),
+              walkingNPCs: createWalkingNPCs('village'),
+              camera: { x: ms.playerStart.x - viewW / 2, y: ms.playerStart.y - viewH / 2 },
+              mobs: createMobsForMap('village'),
+              projectiles: [], floatingDamages: [], selectedMobId: null,
+              demons: [], bosses: [],
+            };
+          }
         }
 
         // Basic auto-attack on selected mob (or nearest in range) — usa atributos da classe
@@ -1447,6 +1517,17 @@ export function useGameEngine(viewW: number, viewH: number) {
             }
             return true;
           }
+          // Chest key: jogador OU pets coletam
+          if (gi.kind === 'chest_key') {
+            const petGrabKey = collectorPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60);
+            if (dPlayer < 26 || petGrabKey) {
+              const slot = newBag.find(i => i.id === 'chest_key');
+              if (slot) slot.count += 1;
+              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: '+🔑' });
+              return false;
+            }
+            return true;
+          }
           // Eggs: SOMENTE jogador coleta (pets ignoram)
           const isEgg = gi.kind.startsWith('egg_');
           if (isEgg) {
@@ -1533,7 +1614,7 @@ export function useGameEngine(viewW: number, viewH: number) {
     teleportToMap, toggleUI, buyPetChest, buyChestType, buyPlanfyEgg, assignPetToMap,
     claimQuest, dismissAFK, revivePet, useTeleportScroll, darkMageSendPet, selectDarkMagePet, setPetFilter,
     logEvent, clearEvents,
-    selectMob, toggleAutoMode, setJoystick, useSkill, usePotion, openEgg, tradeFragments,
+    selectMob, toggleAutoMode, setJoystick, useSkill, usePotion, openEgg, tradeFragments, buyBonusSkill,
     setAutoHealThreshold, setAutoManaThreshold, toggleAutoPotion,
     refreshPlayerStats,
     nextDemonSpawnRef: lastDemonSpawn,

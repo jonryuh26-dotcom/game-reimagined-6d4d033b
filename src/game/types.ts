@@ -261,7 +261,7 @@ export interface GroundItem {
   x: number;
   y: number;
   mapId: MapId;
-  kind: 'hp_potion' | 'mp_potion' | 'gold' | 'ruby' | 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic';
+  kind: 'hp_potion' | 'mp_potion' | 'gold' | 'ruby' | 'chest_key' | 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic';
   amount?: number;
   expiresAt: number;
   bornAt: number;
@@ -377,7 +377,7 @@ export interface ShopItem {
 
 export type EggRarity = 'common' | 'rare' | 'magic' | 'epic' | 'legendary' | 'mythic';
 export type InventoryItemType =
-  | 'teleport_scroll' | 'black_crystal' | 'hp_potion' | 'mp_potion' | 'fragments'
+  | 'teleport_scroll' | 'black_crystal' | 'hp_potion' | 'mp_potion' | 'fragments' | 'chest_key' | 'bonus_aoe_skill'
   | 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic';
 
 export interface InventoryItem {

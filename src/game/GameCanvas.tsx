@@ -35,7 +35,7 @@ export default function GameCanvas() {
     gameState, setTarget, interactWithChest, collectEffects,
     teleportToMap, toggleUI, buyPetChest, buyChestType, buyPlanfyEgg, assignPetToMap,
     claimQuest, dismissAFK, revivePet, useTeleportScroll, darkMageSendPet, selectDarkMagePet, setPetFilter,
-    clearEvents, openEgg, tradeFragments,
+    clearEvents, openEgg, tradeFragments, buyBonusSkill,
     selectMob, toggleAutoMode, setJoystick, useSkill, usePotion,
     setAutoHealThreshold, setAutoManaThreshold, toggleAutoPotion,
     refreshPlayerStats,
@@ -255,7 +255,7 @@ export default function GameCanvas() {
         ctx.shadowBlur = isEgg ? 16 : 10;
         ctx.font = isEgg ? '20px serif' : '16px serif';
         ctx.textAlign = 'center';
-        const icon = isEgg ? '🥚' : (gi.kind === 'hp_potion' ? '🧪' : gi.kind === 'mp_potion' ? '💧' : gi.kind === 'gold' ? '🪙' : '💎');
+        const icon = isEgg ? '🥚' : (gi.kind === 'chest_key' ? '🔑' : gi.kind === 'hp_potion' ? '🧪' : gi.kind === 'mp_potion' ? '💧' : gi.kind === 'gold' ? '🪙' : '💎');
         ctx.fillText(icon, gi.x, gi.y + bob);
         ctx.restore();
       });
@@ -347,6 +347,7 @@ export default function GameCanvas() {
         onClearEvents={clearEvents}
         onOpenEgg={openEgg}
         onTradeFragments={tradeFragments}
+        onBuyBonusSkill={buyBonusSkill}
         nextDemonSpawnAt={nextDemonSpawnRef.current + DEMON_SPAWN_INTERVAL}
         onRefreshStats={refreshPlayerStats}
       />

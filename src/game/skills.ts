@@ -29,8 +29,8 @@ export const CLASS_SKILLS: Record<ClassId, SkillDef[]> = {
     { id: 'dg_thousand', name: 'Mil Cortes',   icon: '⚔️', color: '#e879f9', manaCost: 110, cooldown: 11000, damageMin: 680, damageMax: 980, range: 90, aoeRadius: 0, unlockLevel: 30, desc: 'Rajada de 12 golpes em um alvo.' },
   ],
   darkmage: [
-    { id: 'dm_orb',     name: 'Bola Sombria',    icon: '🌑', color: '#a855f7', manaCost: 30, cooldown: 1500, damageMin: 240, damageMax: 360, range: 340, aoeRadius: 0,   unlockLevel: 1,  desc: 'Projétil amaldiçoado.' },
-    { id: 'dm_chains',  name: 'Prisão das Almas', icon: '⛓️', color: '#6d28d9', manaCost: 50, cooldown: 4000, damageMin: 200, damageMax: 280, range: 320, aoeRadius: 0,   unlockLevel: 10, desc: 'Imobiliza e dilacera o alvo.' },
+    { id: 'dm_orb',     name: 'Bola Sombria',    icon: '🌑', color: '#a855f7', manaCost: 30, cooldown: 1500, damageMin: 240, damageMax: 360, range: 290, aoeRadius: 0,   unlockLevel: 1,  desc: 'Projétil amaldiçoado.' },
+    { id: 'dm_chains',  name: 'Prisão das Almas', icon: '⛓️', color: '#6d28d9', manaCost: 50, cooldown: 4000, damageMin: 200, damageMax: 280, range: 270, aoeRadius: 0,   unlockLevel: 10, desc: 'Imobiliza e dilacera o alvo.' },
     { id: 'dm_storm',   name: 'Tempestade Negra', icon: '🌀', color: '#7e22ce', manaCost: 80, cooldown: 5500, damageMin: 280, damageMax: 420, range: 0, aoeRadius: 200, unlockLevel: 20, desc: 'Raios sombrios em larga área.' },
     { id: 'dm_eclipse', name: 'Dragão do Eclipse', icon: '🐲', color: '#000000', manaCost: 160, cooldown: 14000, damageMin: 900, damageMax: 1300, range: 0, aoeRadius: 260, unlockLevel: 30, desc: 'Invoca um dragão de escuridão pura.' },
   ],
@@ -42,9 +42,16 @@ export const CLASS_SKILLS: Record<ClassId, SkillDef[]> = {
   ],
 };
 
-export const SKILL_BY_ID: Record<string, SkillDef> = Object.fromEntries(
-  Object.values(CLASS_SKILLS).flat().map((s) => [s.id, s]),
-);
+export const BONUS_AOE_SKILL: SkillDef = {
+  id: 'bonus_nova', name: 'Nova Cristalina', icon: '💠', color: '#22d3ee',
+  manaCost: 90, cooldown: 8000, damageMin: 500, damageMax: 800, range: 0, aoeRadius: 220,
+  unlockLevel: 1, desc: 'Explosão arcana de cristal em larga área (Bônus de Loja).',
+};
+
+export const SKILL_BY_ID: Record<string, SkillDef> = {
+  ...Object.fromEntries(Object.values(CLASS_SKILLS).flat().map((s) => [s.id, s])),
+  [BONUS_AOE_SKILL.id]: BONUS_AOE_SKILL,
+};
 
 export function getClassSkills(classId: ClassId, level: number): SkillDef[] {
   return CLASS_SKILLS[classId].filter((s) => s.unlockLevel <= level);

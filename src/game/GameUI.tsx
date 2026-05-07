@@ -38,6 +38,7 @@ interface GameUIProps {
   onClearEvents: () => void;
   onOpenEgg: (kind: 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic') => void;
   onTradeFragments: (kind: 'hp_potion' | 'mp_potion') => void;
+  onBuyBonusSkill: () => void;
   nextDemonSpawnAt: number;
   onRefreshStats?: () => void;
 }
@@ -97,7 +98,7 @@ function GameUI({
   onToggleBossMenu, onToggleBag, onToggleDarkMage, onToggleReport, onToggleMenu,
   onTeleport, onBuyPetChest, onBuyChestType, onBuyPlanfyEgg, onAssignPet, onClaimQuest, onDismissAFK, onRevivePet,
   onUseTeleportScroll, onDarkMageSendPet, onSelectDarkMagePet, onSetPetFilter, onClearEvents,
-  onOpenEgg, onTradeFragments,
+  onOpenEgg, onTradeFragments, onBuyBonusSkill,
   nextDemonSpawnAt, onRefreshStats,
 }: GameUIProps) {
   const { resources, currentMap, pets, level, xpPercent, quests, bag, alerts, petQuestRarityFilter, player } = state;
@@ -363,12 +364,6 @@ function GameUI({
         </div>
       )}
 
-      {/* Hint */}
-      {!state.chestOpened && !state.showMenu && (
-        <div className="fixed top-32 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg z-20 animate-fade-in" style={cardStyle}>
-          <span className="text-white text-[10px]">Encontre o baú e toque para abrir!</span>
-        </div>
-      )}
 
       {/* ========== DASHBOARD ========== */}
       {state.showMenu && (
@@ -724,6 +719,28 @@ function GameUI({
                       </div>
                     );
                   })}
+
+                  {/* Skill bônus em área — desbloqueia para qualquer classe */}
+                  {(() => {
+                    const owns = state.skills.some(s => s.id === 'bonus_nova');
+                    const cost = 5;
+                    const can = !owns && resources.crystal >= cost;
+                    return (
+                      <div className="rounded-xl p-3 flex items-center gap-3" style={{ ...cardStyle, borderColor: 'hsl(190 90% 60%)' }}>
+                        <div className="text-2xl">💠</div>
+                        <div className="flex-1">
+                          <div className="text-white font-bold text-[11px]">Nova Cristalina (AOE)</div>
+                          <div className="text-[9px] text-gray-400">Skill em área para qualquer classe</div>
+                          <div className="text-[9px]" style={{ color: 'hsl(190 90% 70%)' }}>Custo: 💎 {cost}</div>
+                        </div>
+                        <button
+                          className={`px-3 py-1.5 rounded-lg text-[11px] font-bold ${owns ? 'bg-gray-700 text-gray-400' : can ? 'bg-cyan-600 text-white active:scale-95' : 'bg-gray-700 text-gray-500'}`}
+                          onClick={onBuyBonusSkill}
+                          disabled={!can}
+                        >{owns ? 'Adquirida' : 'Comprar'}</button>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
