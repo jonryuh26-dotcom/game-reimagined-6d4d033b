@@ -96,7 +96,9 @@ function GameUI({
   state, onTogglePetMenu, onToggleShop, onToggleTeleport, onToggleQuest,
   onToggleBossMenu, onToggleBag, onToggleDarkMage, onToggleReport, onToggleMenu,
   onTeleport, onBuyPetChest, onBuyChestType, onBuyPlanfyEgg, onAssignPet, onClaimQuest, onDismissAFK, onRevivePet,
-  onUseTeleportScroll, onDarkMageSendPet, onSelectDarkMagePet, onSetPetFilter, onClearEvents, nextDemonSpawnAt, onRefreshStats,
+  onUseTeleportScroll, onDarkMageSendPet, onSelectDarkMagePet, onSetPetFilter, onClearEvents,
+  onOpenEgg, onTradeFragments,
+  nextDemonSpawnAt, onRefreshStats,
 }: GameUIProps) {
   const { resources, currentMap, pets, level, xpPercent, quests, bag, alerts, petQuestRarityFilter, player } = state;
   const mapConfig = MAPS[currentMap];
