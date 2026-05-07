@@ -180,7 +180,7 @@ export default function GameCanvas() {
         }
       });
 
-      if (gameState.chestOpened) drawCreature(ctx, gameState.creature, cam, time);
+      // creature inicial removida — não há mais pet inicial do baú
 
       gameState.pets.forEach(pet => {
         if (pet.assignedMap === currentMapId && pet.state !== 'idle') drawPet(ctx, pet, cam, time);
