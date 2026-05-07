@@ -1,5 +1,5 @@
 import { MapConfig, MapId, ShopItem, PetRarity, PetVariation, Quest } from './types';
-import mapMain from '@/assets/map-village-mega.jpg';
+import mapMain from '@/assets/map-altar-hub.png';
 import mapDarkVillage from '@/assets/map-darkvillage.png';
 import mapIce from '@/assets/map-ice.png';
 import mapFire from '@/assets/map-fire.png';
@@ -15,6 +15,8 @@ import mapMysticSwamp from '@/assets/map-mystic-swamp.png';
 import mapUnderground1 from '@/assets/map-underground-1.jpg';
 import mapUnderground2 from '@/assets/map-underground-2.jpg';
 import mapUnderground3 from '@/assets/map-underground-3.jpg';
+import mapPurpleWilds from '@/assets/map-purple-wilds.png';
+import mapInfernal from '@/assets/map-infernal.png';
 
 // Dimensão padrão (mapas antigos). Vila grande define seu próprio width/height.
 export const MAP_WIDTH = 960;
