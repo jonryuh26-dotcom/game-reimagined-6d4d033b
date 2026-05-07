@@ -2,6 +2,7 @@ import { memo, useState, useMemo, useEffect } from 'react';
 import { GameState, MapId, PetRarity, GameEvent } from './types';
 import { loadAttrState, syncWithLevel, commitAttrState, ATTR_LABELS, AttrKey, AttrState } from './attributes';
 import { clearProfile, loadProfile, getClass, deriveStats, ATTR_IDS } from './classes';
+import { loadAvatar, saveAvatar, AVATAR_PALETTE, AvatarKind } from './avatar';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from 'recharts';
 import {
   MAPS, RARITY_COLORS,
