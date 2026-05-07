@@ -38,6 +38,7 @@ interface GameUIProps {
   onClearEvents: () => void;
   onOpenEgg: (kind: 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic') => void;
   onTradeFragments: (kind: 'hp_potion' | 'mp_potion') => void;
+  onBuyBonusSkill: () => void;
   nextDemonSpawnAt: number;
   onRefreshStats?: () => void;
 }
@@ -97,7 +98,7 @@ function GameUI({
   onToggleBossMenu, onToggleBag, onToggleDarkMage, onToggleReport, onToggleMenu,
   onTeleport, onBuyPetChest, onBuyChestType, onBuyPlanfyEgg, onAssignPet, onClaimQuest, onDismissAFK, onRevivePet,
   onUseTeleportScroll, onDarkMageSendPet, onSelectDarkMagePet, onSetPetFilter, onClearEvents,
-  onOpenEgg, onTradeFragments,
+  onOpenEgg, onTradeFragments, onBuyBonusSkill,
   nextDemonSpawnAt, onRefreshStats,
 }: GameUIProps) {
   const { resources, currentMap, pets, level, xpPercent, quests, bag, alerts, petQuestRarityFilter, player } = state;

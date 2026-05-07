@@ -347,6 +347,7 @@ export default function GameCanvas() {
         onClearEvents={clearEvents}
         onOpenEgg={openEgg}
         onTradeFragments={tradeFragments}
+        onBuyBonusSkill={buyBonusSkill}
         nextDemonSpawnAt={nextDemonSpawnRef.current + DEMON_SPAWN_INTERVAL}
         onRefreshStats={refreshPlayerStats}
       />
