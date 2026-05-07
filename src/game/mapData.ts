@@ -176,8 +176,11 @@ export const MAP_MOB_KINDS: Partial<Record<import('./types').MapId, import('./ty
   volcano:        ['saibaman_corrupted', 'saibaman_alpha', 'dragonling_crimson'],
   dark:           ['saibaman_alpha', 'saibaman_corrupted', 'dragonling_crimson'],
   underground_1:  ['charling_orange'],
-  underground_2:  ['charling_orange', 'charling_blue'],
-  underground_3:  ['charling_blue', 'charling_obsidian'],
+  // Subterrâneos II e III agora também recebem mobs da vila (lvl 35+)
+  underground_2:  ['charling_orange', 'charling_blue', 'shadow_wolf', 'wild_boar', 'spectral_fairy'],
+  underground_3:  ['charling_blue', 'charling_obsidian', 'shadow_wolf', 'wild_boar', 'spectral_fairy'],
+  purplewilds:    ['saibaman_corrupted', 'spectral_fairy', 'shadow_wolf'],
+  infernal:       ['saibaman_alpha', 'dragonling_crimson', 'wild_boar'],
 };
 
 // Range de level por mapa (mob terá level aleatório nesse range)
@@ -188,8 +191,10 @@ export const MAP_LEVEL_RANGE: Partial<Record<import('./types').MapId, [number, n
   volcano:         [60, 80],
   dark:            [80, 100],
   underground_1:   [1, 10],
-  underground_2:   [10, 25],
-  underground_3:   [25, 50],
+  underground_2:   [35, 55],
+  underground_3:   [40, 70],
+  purplewilds:     [25, 50],
+  infernal:        [55, 90],
 };
 
 // Sequência principal de progressão (5 mapas) e nível requerido
@@ -199,6 +204,8 @@ export const PROGRESSION_MAPS: { id: import('./types').MapId; minLevel: number }
   { id: 'frozentundra',    minLevel: 15 },
   { id: 'volcano',         minLevel: 30 },
   { id: 'dark',            minLevel: 50 },
+  { id: 'purplewilds',     minLevel: 25 },
+  { id: 'infernal',        minLevel: 55 },
 ];
 
 
