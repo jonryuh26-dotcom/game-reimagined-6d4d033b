@@ -337,34 +337,36 @@ export function useGameEngine(viewW: number, viewH: number) {
     if (!chest || chest.opened) return;
     if (dist(s.player, chest) > 50) return;
 
-    if (chestIdx === 0 && !s.chestOpened) {
-      setGameState(prev => ({
-        ...prev, chestOpened: true,
-        chests: prev.chests.map((c, i) => i === chestIdx ? { ...c, opened: true, respawnAt: Date.now() + MAPS[prev.currentMap].chestRespawnTime } : c),
-        creature: { ...prev.creature, state: 'collecting' },
-        cycleStartTime: Date.now(), cycleTimer: 60000,
-        quests: prev.quests.map(q => q.type === 'open_chest' ? { ...q, progress: q.progress + 1, completed: q.progress + 1 >= q.target } : q),
-      }));
-    } else {
-      const mapCfg = MAPS[s.currentMap];
-      const rewards = generateChestRewards(mapCfg.goldBonus, mapCfg.rubyBonus);
-      const dropBlackCrystal = Math.random() < BLACK_CRYSTAL_DROP_CHANCE;
-      queueEvent('chest_opened', `Baú aberto: +${rewards.gold} ouro, +${rewards.ruby} rubi${dropBlackCrystal ? ', +Cristal Negro 🖤' : ''}`, '🎁', '#fbbf24');
-      if (dropBlackCrystal) queueEvent('item_drop', 'Cristal Negro coletado!', '🖤', '#a855f7');
-      setGameState(prev => ({
-        ...prev,
-        chests: prev.chests.map((c, i) => i === chestIdx ? { ...c, opened: true, respawnAt: Date.now() + MAPS[prev.currentMap].chestRespawnTime } : c),
-        resources: { ...prev.resources, gold: prev.resources.gold + rewards.gold, ruby: prev.resources.ruby + rewards.ruby, crystal: prev.resources.crystal + rewards.crystal },
-        bag: dropBlackCrystal
-          ? prev.bag.map(i => i.id === 'black_crystal' ? { ...i, count: i.count + 1 } : i)
-          : prev.bag,
-        quests: prev.quests.map(q => q.type === 'open_chest' ? { ...q, progress: q.progress + 1, completed: q.progress + 1 >= q.target } : q),
-      }));
-      const txt = dropBlackCrystal
-        ? `+${rewards.gold}🪙 +${rewards.ruby}💎 +🖤`
-        : `+${rewards.gold}🪙 +${rewards.ruby}💎`;
-      collectEffectsRef.current.push({ x: chest.x, y: chest.y, startTime: performance.now(), text: txt });
+    // Requer chave
+    const keySlot = s.bag.find(i => i.id === 'chest_key');
+    if (!keySlot || keySlot.count <= 0) {
+      queueEvent('item_drop', '🔒 Você precisa de uma chave 🔑 para abrir o baú', '🔒', '#ef4444');
+      return;
     }
+
+    const mapCfg = MAPS[s.currentMap];
+    const rewards = generateChestRewards(mapCfg.goldBonus, mapCfg.rubyBonus);
+    const dropBlackCrystal = Math.random() < BLACK_CRYSTAL_DROP_CHANCE;
+    queueEvent('chest_opened', `Baú aberto: +${rewards.gold} ouro, +${rewards.ruby} rubi${dropBlackCrystal ? ', +Cristal Negro 🖤' : ''}`, '🎁', '#fbbf24');
+    if (dropBlackCrystal) queueEvent('item_drop', 'Cristal Negro coletado!', '🖤', '#a855f7');
+    setGameState(prev => ({
+      ...prev,
+      chestOpened: true,
+      chests: prev.chests.map((c, i) => i === chestIdx ? { ...c, opened: true, respawnAt: Date.now() + MAPS[prev.currentMap].chestRespawnTime } : c),
+      cycleStartTime: prev.chestOpened ? prev.cycleStartTime : Date.now(),
+      cycleTimer: prev.chestOpened ? prev.cycleTimer : 60000,
+      resources: { ...prev.resources, gold: prev.resources.gold + rewards.gold, ruby: prev.resources.ruby + rewards.ruby, crystal: prev.resources.crystal + rewards.crystal },
+      bag: prev.bag.map(i => {
+        if (i.id === 'chest_key') return { ...i, count: i.count - 1 };
+        if (dropBlackCrystal && i.id === 'black_crystal') return { ...i, count: i.count + 1 };
+        return i;
+      }),
+      quests: prev.quests.map(q => q.type === 'open_chest' ? { ...q, progress: q.progress + 1, completed: q.progress + 1 >= q.target } : q),
+    }));
+    const txt = dropBlackCrystal
+      ? `+${rewards.gold}🪙 +${rewards.ruby}💎 +🖤`
+      : `+${rewards.gold}🪙 +${rewards.ruby}💎`;
+    collectEffectsRef.current.push({ x: chest.x, y: chest.y, startTime: performance.now(), text: txt });
   }, []);
 
   const logEvent = useCallback((type: GameEventType, message: string, icon: string, color: string) => {
