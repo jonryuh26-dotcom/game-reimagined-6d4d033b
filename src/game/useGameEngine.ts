@@ -1325,11 +1325,24 @@ export function useGameEngine(viewW: number, viewH: number) {
           m.animFrame += 1;
         });
 
-        // Player respawn on death
+        // Player respawn on death — sempre volta para o primeiro mapa (vila)
         if (player.hp <= 0) {
-          const ms = MAPS[prev.currentMap];
+          const ms = MAPS['village'];
           player.x = ms.playerStart.x; player.y = ms.playerStart.y;
           player.hp = player.maxHp; player.mp = player.maxMp;
+          if (prev.currentMap !== 'village') {
+            queueEvent('teleport', 'Você morreu! Voltando para a vila…', '💀', '#ef4444');
+            return {
+              ...prev, player, currentMap: 'village',
+              coins: createCoins('village'),
+              chests: MAPS['village'].chests.map((p, i) => ({ id: i, x: p.x, y: p.y, opened: false, respawnAt: null })),
+              walkingNPCs: createWalkingNPCs('village'),
+              camera: { x: ms.playerStart.x - viewW / 2, y: ms.playerStart.y - viewH / 2 },
+              mobs: createMobsForMap('village'),
+              projectiles: [], floatingDamages: [], selectedMobId: null,
+              demons: [], bosses: [],
+            };
+          }
         }
 
         // Basic auto-attack on selected mob (or nearest in range) — usa atributos da classe
