@@ -255,7 +255,7 @@ export default function GameCanvas() {
         ctx.shadowBlur = isEgg ? 16 : 10;
         ctx.font = isEgg ? '20px serif' : '16px serif';
         ctx.textAlign = 'center';
-        const icon = isEgg ? '🥚' : (gi.kind === 'hp_potion' ? '🧪' : gi.kind === 'mp_potion' ? '💧' : gi.kind === 'gold' ? '🪙' : '💎');
+        const icon = isEgg ? '🥚' : (gi.kind === 'chest_key' ? '🔑' : gi.kind === 'hp_potion' ? '🧪' : gi.kind === 'mp_potion' ? '💧' : gi.kind === 'gold' ? '🪙' : '💎');
         ctx.fillText(icon, gi.x, gi.y + bob);
         ctx.restore();
       });
