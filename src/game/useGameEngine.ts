@@ -1533,7 +1533,7 @@ export function useGameEngine(viewW: number, viewH: number) {
     teleportToMap, toggleUI, buyPetChest, buyChestType, buyPlanfyEgg, assignPetToMap,
     claimQuest, dismissAFK, revivePet, useTeleportScroll, darkMageSendPet, selectDarkMagePet, setPetFilter,
     logEvent, clearEvents,
-    selectMob, toggleAutoMode, setJoystick, useSkill, usePotion,
+    selectMob, toggleAutoMode, setJoystick, useSkill, usePotion, openEgg, tradeFragments,
     setAutoHealThreshold, setAutoManaThreshold, toggleAutoPotion,
     refreshPlayerStats,
     nextDemonSpawnRef: lastDemonSpawn,
