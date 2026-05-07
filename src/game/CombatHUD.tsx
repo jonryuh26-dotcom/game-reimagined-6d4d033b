@@ -28,7 +28,7 @@ export default function CombatHUD({
     <>
       {/* Target HP — top center */}
       {target && (
-        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-fade-in">
+        <div className="fixed top-44 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-fade-in">
           <div
             className="px-3 py-1.5 flex items-center gap-2 min-w-[180px] rounded-md"
             style={{
