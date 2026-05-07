@@ -792,6 +792,18 @@ export function useGameEngine(viewW: number, viewH: number) {
           else { player.moving = false; targetRef.current = null; }
         } else { player.moving = false; }
 
+          // Pets curam o jogador (todos, não só healers) — pulso lento
+          if (pet.assignedMap === prev.currentMap && pet.state !== 'dead' && pet.state !== 'trapped') {
+            if (player.hp < player.maxHp && now - lastHealTime.current >= HEAL_INTERVAL) {
+              const dPl = dist(pet, player);
+              if (dPl < 80) {
+                const heal = pet.isHealer ? 6 : pet.rarity === 'legendary' ? 4 : pet.rarity === 'epic' ? 3 : 2;
+                player.hp = Math.min(player.maxHp, player.hp + heal);
+                lastHealTime.current = now;
+                collectEffectsRef.current.push({ x: player.x, y: player.y - 18, startTime: time, text: `+${heal} ❤️` });
+              }
+            }
+          }
 
         const dimsCam = mapDims(prev.currentMap);
         const cam = {
