@@ -5,7 +5,7 @@ export interface Position {
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
-export type MapId = 'village' | 'darkvillage' | 'forest' | 'volcano' | 'desert' | 'swamp' | 'crystal' | 'ruins' | 'dark' | 'enchantedforest' | 'frozentundra' | 'lavafields' | 'mysticswamp' | 'underground_1' | 'underground_2' | 'underground_3';
+export type MapId = 'village' | 'darkvillage' | 'forest' | 'volcano' | 'desert' | 'swamp' | 'crystal' | 'ruins' | 'dark' | 'enchantedforest' | 'frozentundra' | 'lavafields' | 'mysticswamp' | 'underground_1' | 'underground_2' | 'underground_3' | 'purplewilds' | 'infernal';
 
 export interface Portal {
   x: number;
