@@ -42,9 +42,16 @@ export const CLASS_SKILLS: Record<ClassId, SkillDef[]> = {
   ],
 };
 
-export const SKILL_BY_ID: Record<string, SkillDef> = Object.fromEntries(
-  Object.values(CLASS_SKILLS).flat().map((s) => [s.id, s]),
-);
+export const BONUS_AOE_SKILL: SkillDef = {
+  id: 'bonus_nova', name: 'Nova Cristalina', icon: '💠', color: '#22d3ee',
+  manaCost: 90, cooldown: 8000, damageMin: 500, damageMax: 800, range: 0, aoeRadius: 220,
+  unlockLevel: 1, desc: 'Explosão arcana de cristal em larga área (Bônus de Loja).',
+};
+
+export const SKILL_BY_ID: Record<string, SkillDef> = {
+  ...Object.fromEntries(Object.values(CLASS_SKILLS).flat().map((s) => [s.id, s])),
+  [BONUS_AOE_SKILL.id]: BONUS_AOE_SKILL,
+};
 
 export function getClassSkills(classId: ClassId, level: number): SkillDef[] {
   return CLASS_SKILLS[classId].filter((s) => s.unlockLevel <= level);
