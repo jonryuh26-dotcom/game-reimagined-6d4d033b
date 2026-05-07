@@ -67,9 +67,11 @@ function createWalkingNPCs(_mapId: MapId): WalkingNPC[] {
 const INITIAL_BAG: InventoryItem[] = [
   { id: 'teleport_scroll', name: 'Scroll de Teleporte', icon: '📜', count: 0 },
   { id: 'black_crystal', name: 'Cristal Negro', icon: '🖤', count: 0 },
+  { id: 'chest_key', name: 'Chave de Baú', icon: '🔑', count: 0 },
   { id: 'hp_potion', name: 'Poção de Vida', icon: '❤️', count: 8 },
   { id: 'mp_potion', name: 'Poção de Mana', icon: '💧', count: 5 },
   { id: 'fragments', name: 'Fragmentos de Ovo', icon: '🔮', count: 0 },
+  { id: 'bonus_aoe_skill', name: 'Skill: Nova Cristalina', icon: '💠', count: 0 },
   { id: 'egg_common', name: 'Ovo Comum', icon: '🥚', count: 0 },
   { id: 'egg_rare', name: 'Ovo Raro', icon: '🥚', count: 0 },
   { id: 'egg_magic', name: 'Ovo Mágico', icon: '🥚', count: 0 },
