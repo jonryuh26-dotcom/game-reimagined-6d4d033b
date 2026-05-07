@@ -330,6 +330,8 @@ export default function GameCanvas() {
         onSelectDarkMagePet={selectDarkMagePet}
         onSetPetFilter={setPetFilter}
         onClearEvents={clearEvents}
+        onOpenEgg={openEgg}
+        onTradeFragments={tradeFragments}
         nextDemonSpawnAt={nextDemonSpawnRef.current + DEMON_SPAWN_INTERVAL}
         onRefreshStats={refreshPlayerStats}
       />
