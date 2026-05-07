@@ -1364,18 +1364,40 @@ export function useGameEngine(viewW: number, viewH: number) {
           if (gi.mapId !== prev.currentMap) return now < gi.expiresAt;
           if (now >= gi.expiresAt) return false;
           const dPlayer = Math.sqrt((gi.x - player.x) ** 2 + (gi.y - player.y) ** 2);
-          // Pet collect (somente para gold/ruby) — colete em raio de 60
-          if (gi.kind === 'gold' || gi.kind === 'ruby') {
-            const collected = collectorPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60) || dPlayer < 26;
+          // Gold: qualquer pet vivo coleta; Ruby: apenas pets lendários coletam
+          if (gi.kind === 'gold') {
+            const collected = collectorPets.length > 0 && collectorPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60) || dPlayer < 26;
             if (collected) {
-              if (gi.kind === 'gold') resources.gold += gi.amount ?? 1;
-              else resources.ruby += gi.amount ?? 1;
-              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: gi.kind === 'gold' ? `+${gi.amount}🪙` : `+${gi.amount}💎` });
+              resources.gold += gi.amount ?? 1;
+              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: `+${gi.amount}🪙` });
               return false;
             }
             return true;
           }
-          if (dPlayer < 22) {
+          if (gi.kind === 'ruby') {
+            const legendaryPets = collectorPets.filter(p => p.rarity === 'legendary');
+            const collected = legendaryPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60) || dPlayer < 26;
+            if (collected) {
+              resources.ruby += gi.amount ?? 1;
+              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: `+${gi.amount}💎` });
+              return false;
+            }
+            return true;
+          }
+          // Eggs: SOMENTE jogador coleta (pets ignoram)
+          const isEgg = gi.kind.startsWith('egg_');
+          if (isEgg) {
+            if (dPlayer < 22) {
+              const slot = newBag.find(i => i.id === gi.kind);
+              if (slot) slot.count += 1;
+              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: '+🥚' });
+              return false;
+            }
+            return true;
+          }
+          // Poções: jogador coleta; pets também trazem para o jogador
+          const petGrabbed = collectorPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60);
+          if (dPlayer < 22 || petGrabbed) {
             const slot = newBag.find(i => i.id === gi.kind);
             if (slot) slot.count += 1;
             collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: gi.kind === 'hp_potion' ? '+❤️' : '+💧' });
