@@ -35,7 +35,7 @@ export default function GameCanvas() {
     gameState, setTarget, interactWithChest, collectEffects,
     teleportToMap, toggleUI, buyPetChest, buyChestType, buyPlanfyEgg, assignPetToMap,
     claimQuest, dismissAFK, revivePet, useTeleportScroll, darkMageSendPet, selectDarkMagePet, setPetFilter,
-    clearEvents,
+    clearEvents, openEgg, tradeFragments,
     selectMob, toggleAutoMode, setJoystick, useSkill, usePotion,
     setAutoHealThreshold, setAutoManaThreshold, toggleAutoPotion,
     refreshPlayerStats,
