@@ -59,24 +59,9 @@ function createCoins(mapId: MapId): Coin[] {
   }));
 }
 
-function createWalkingNPCs(mapId: MapId): WalkingNPC[] {
-  const map = MAPS[mapId];
-  const now = Date.now();
-  return map.npcPositions.map((pos, i) => ({
-    id: `npc_${mapId}_${i}`,
-    x: pos.x, y: pos.y,
-    mapId,
-    name: NPC_NAMES[i % NPC_NAMES.length],
-    direction: 'down' as const,
-    animFrame: 0,
-    targetX: pos.x + (Math.random() - 0.5) * 100,
-    targetY: pos.y + (Math.random() - 0.5) * 100,
-    moveTimer: now + Math.random() * 5000,
-    hasQuest: true,
-    color: NPC_COLORS[i % NPC_COLORS.length],
-    isHostile: i === 0, // primeiro NPC do mapa é hostil
-    hostilityTimer: now + HOSTILE_NPC_PUNISH_INTERVAL,
-  }));
+function createWalkingNPCs(_mapId: MapId): WalkingNPC[] {
+  // NPCs com quest que andam pelo mapa foram removidos.
+  return [];
 }
 
 const INITIAL_BAG: InventoryItem[] = [
@@ -84,6 +69,13 @@ const INITIAL_BAG: InventoryItem[] = [
   { id: 'black_crystal', name: 'Cristal Negro', icon: '🖤', count: 0 },
   { id: 'hp_potion', name: 'Poção de Vida', icon: '❤️', count: 8 },
   { id: 'mp_potion', name: 'Poção de Mana', icon: '💧', count: 5 },
+  { id: 'fragments', name: 'Fragmentos de Ovo', icon: '🔮', count: 0 },
+  { id: 'egg_common', name: 'Ovo Comum', icon: '🥚', count: 0 },
+  { id: 'egg_rare', name: 'Ovo Raro', icon: '🥚', count: 0 },
+  { id: 'egg_magic', name: 'Ovo Mágico', icon: '🥚', count: 0 },
+  { id: 'egg_epic', name: 'Ovo Épico', icon: '🥚', count: 0 },
+  { id: 'egg_legendary', name: 'Ovo Lendário', icon: '🥚', count: 0 },
+  { id: 'egg_mythic', name: 'Ovo Mítico', icon: '🥚', count: 0 },
 ];
 
 function variantFromKind(kind: MobKind): 'normal' | 'elite' | 'corrupted' | 'alpha' | 'dragon_emerald' | 'dragon_crimson' | 'wolf' | 'boar' | 'fairy' | 'char_orange' | 'char_blue' | 'char_obsidian' {
@@ -270,19 +262,26 @@ export function useGameEngine(viewW: number, viewH: number) {
         bornAt: now, expiresAt: now + 60000,
       });
     }
-    // Egg drop (rare): rolls independently
-    const eggChance = mob.variant === 'alpha' ? 0.08 : mob.variant === 'corrupted' ? 0.04 : mob.variant === 'elite' ? 0.02 : 0.006;
-    if (Math.random() < eggChance) {
+    // Egg drop: chance escala com nível do mob
+    const baseEgg = mob.variant === 'alpha' ? 0.10 : mob.variant === 'corrupted' ? 0.06 : mob.variant === 'elite' ? 0.04 : 0.015;
+    const lvBonus = Math.min(0.20, mob.level * 0.004);
+    if (Math.random() < baseEgg + lvBonus) {
       const r = Math.random();
       const tier =
-        r < 0.5 ? { id: 'common', name: 'Comum', color: '#e5e7eb', emoji: '🥚' } :
-        r < 0.78 ? { id: 'rare', name: 'Raro', color: '#22c55e', emoji: '🥚' } :
-        r < 0.92 ? { id: 'magic', name: 'Mágico', color: '#3b82f6', emoji: '🥚' } :
-        r < 0.98 ? { id: 'epic', name: 'Épico', color: '#a855f7', emoji: '🥚' } :
-        r < 0.997 ? { id: 'legendary', name: 'Lendário', color: '#ef4444', emoji: '🥚' } :
-                    { id: 'mythic', name: 'Mítico', color: '#fbbf24', emoji: '🥚' };
-      const playerName = (typeof window !== 'undefined' && localStorage.getItem('ryuzen-name')) || 'Você';
-      queueEvent('item_drop', `🔥 ${playerName} encontrou um Ovo Dracônico ${tier.name}!`, tier.emoji, tier.color);
+        r < 0.50 ? { id: 'egg_common',    label: 'Comum',     color: '#e5e7eb' } :
+        r < 0.78 ? { id: 'egg_rare',      label: 'Raro',      color: '#22c55e' } :
+        r < 0.92 ? { id: 'egg_magic',     label: 'Mágico',    color: '#3b82f6' } :
+        r < 0.98 ? { id: 'egg_epic',      label: 'Épico',     color: '#a855f7' } :
+        r < 0.997 ? { id: 'egg_legendary', label: 'Lendário', color: '#ef4444' } :
+                    { id: 'egg_mythic',    label: 'Mítico',    color: '#fbbf24' };
+      pendingDropsRef.current.push({
+        id: `gi_egg_${now}_${Math.random().toString(36).slice(2,6)}`,
+        x: mob.x + (Math.random() - 0.5) * 16,
+        y: mob.y + (Math.random() - 0.5) * 16,
+        mapId, kind: tier.id as GroundItem['kind'],
+        bornAt: now, expiresAt: now + 90000,
+      });
+      queueEvent('item_drop', `🥚 Ovo ${tier.label} dropou!`, '🥚', tier.color);
     }
   };
 
@@ -418,6 +417,56 @@ export function useGameEngine(viewW: number, viewH: number) {
         player,
         bag: prev.bag.map(i => i.id === kind ? { ...i, count: i.count - 1 } : i),
       };
+    });
+  }, []);
+
+  // Abre um ovo: comum SEMPRE falha (recebe fragmentos). Outros: chance crescente.
+  const openEgg = useCallback((kind: 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic') => {
+    setGameState(prev => {
+      const slot = prev.bag.find(i => i.id === kind);
+      if (!slot || slot.count <= 0) return prev;
+
+      const successChance: Record<string, number> = {
+        egg_common: 0, egg_rare: 0.45, egg_magic: 0.65, egg_epic: 0.80, egg_legendary: 0.92, egg_mythic: 1.0,
+      };
+      const fragmentReward: Record<string, number> = {
+        egg_common: 1, egg_rare: 3, egg_magic: 5, egg_epic: 8, egg_legendary: 14, egg_mythic: 25,
+      };
+      const rarityWeights: Record<string, Partial<Record<PetRarity, number>>> = {
+        egg_common:    { common: 100 },
+        egg_rare:      { common: 60, rare: 40 },
+        egg_magic:     { common: 35, rare: 50, epic: 15 },
+        egg_epic:      { rare: 35, epic: 50, legendary: 15 },
+        egg_legendary: { epic: 40, legendary: 60 },
+        egg_mythic:    { epic: 20, legendary: 80 },
+      };
+
+      const success = Math.random() < successChance[kind];
+      const newBag = prev.bag.map(i => i.id === kind ? { ...i, count: i.count - 1 } : i);
+      if (!success) {
+        const frags = fragmentReward[kind];
+        const fragSlot = newBag.find(i => i.id === 'fragments');
+        if (fragSlot) fragSlot.count += frags;
+        queueEvent('item_drop', `Ovo falhou! Recebeu ${frags} fragmentos 🔮`, '🔮', '#a855f7');
+        return { ...prev, bag: newBag };
+      }
+      const newPet = rollGachaPet(prev.player, rarityWeights[kind] as Record<PetRarity, number>);
+      queueEvent('pet_acquired', `🥚→🐾 ${newPet.name} (${newPet.rarity})`, '🐾', '#a78bfa');
+      return { ...prev, bag: newBag, pets: [...prev.pets, newPet] };
+    });
+  }, []);
+
+  // Troca fragmentos por poções (10 frags = 1 poção)
+  const tradeFragments = useCallback((kind: 'hp_potion' | 'mp_potion') => {
+    setGameState(prev => {
+      const fragSlot = prev.bag.find(i => i.id === 'fragments');
+      if (!fragSlot || fragSlot.count < 10) return prev;
+      const newBag = prev.bag.map(i =>
+        i.id === 'fragments' ? { ...i, count: i.count - 10 } :
+        i.id === kind ? { ...i, count: i.count + 1 } : i
+      );
+      queueEvent('item_drop', `Trocou 10 fragmentos por ${kind === 'hp_potion' ? 'poção de vida' : 'poção de mana'}`, '🔮', '#22c55e');
+      return { ...prev, bag: newBag };
     });
   }, []);
 
@@ -928,7 +977,20 @@ export function useGameEngine(viewW: number, viewH: number) {
             return;
           }
 
-          // Healer logic
+          // Pets curam o jogador (todos, não só healers) — pulso lento
+          if (pet.assignedMap === prev.currentMap) {
+            if (player.hp < player.maxHp && now - lastHealTime.current >= HEAL_INTERVAL) {
+              const dPl = dist(pet, player);
+              if (dPl < 80) {
+                const heal = pet.isHealer ? 6 : pet.rarity === 'legendary' ? 4 : pet.rarity === 'epic' ? 3 : 2;
+                player.hp = Math.min(player.maxHp, player.hp + heal);
+                lastHealTime.current = now;
+                collectEffectsRef.current.push({ x: player.x, y: player.y - 18, startTime: time, text: `+${heal} ❤️` });
+              }
+            }
+          }
+
+
           if (pet.isHealer && pet.state === 'farming') {
             const hurtPets = pets.filter(p => p.assignedMap === pet.assignedMap && p.hp < p.maxHp && p.state !== 'dead' && p.id !== pet.id);
             if (hurtPets.length > 0 && now - lastHealTime.current >= HEAL_INTERVAL) {
@@ -1365,18 +1427,40 @@ export function useGameEngine(viewW: number, viewH: number) {
           if (gi.mapId !== prev.currentMap) return now < gi.expiresAt;
           if (now >= gi.expiresAt) return false;
           const dPlayer = Math.sqrt((gi.x - player.x) ** 2 + (gi.y - player.y) ** 2);
-          // Pet collect (somente para gold/ruby) — colete em raio de 60
-          if (gi.kind === 'gold' || gi.kind === 'ruby') {
-            const collected = collectorPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60) || dPlayer < 26;
+          // Gold: qualquer pet vivo coleta; Ruby: apenas pets lendários coletam
+          if (gi.kind === 'gold') {
+            const collected = collectorPets.length > 0 && collectorPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60) || dPlayer < 26;
             if (collected) {
-              if (gi.kind === 'gold') resources.gold += gi.amount ?? 1;
-              else resources.ruby += gi.amount ?? 1;
-              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: gi.kind === 'gold' ? `+${gi.amount}🪙` : `+${gi.amount}💎` });
+              resources.gold += gi.amount ?? 1;
+              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: `+${gi.amount}🪙` });
               return false;
             }
             return true;
           }
-          if (dPlayer < 22) {
+          if (gi.kind === 'ruby') {
+            const legendaryPets = collectorPets.filter(p => p.rarity === 'legendary');
+            const collected = legendaryPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60) || dPlayer < 26;
+            if (collected) {
+              resources.ruby += gi.amount ?? 1;
+              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: `+${gi.amount}💎` });
+              return false;
+            }
+            return true;
+          }
+          // Eggs: SOMENTE jogador coleta (pets ignoram)
+          const isEgg = gi.kind.startsWith('egg_');
+          if (isEgg) {
+            if (dPlayer < 22) {
+              const slot = newBag.find(i => i.id === gi.kind);
+              if (slot) slot.count += 1;
+              collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: '+🥚' });
+              return false;
+            }
+            return true;
+          }
+          // Poções: jogador coleta; pets também trazem para o jogador
+          const petGrabbed = collectorPets.some(p => Math.sqrt((gi.x - p.x) ** 2 + (gi.y - p.y) ** 2) < 60);
+          if (dPlayer < 22 || petGrabbed) {
             const slot = newBag.find(i => i.id === gi.kind);
             if (slot) slot.count += 1;
             collectEffectsRef.current.push({ x: gi.x, y: gi.y, startTime: time, text: gi.kind === 'hp_potion' ? '+❤️' : '+💧' });
@@ -1449,7 +1533,7 @@ export function useGameEngine(viewW: number, viewH: number) {
     teleportToMap, toggleUI, buyPetChest, buyChestType, buyPlanfyEgg, assignPetToMap,
     claimQuest, dismissAFK, revivePet, useTeleportScroll, darkMageSendPet, selectDarkMagePet, setPetFilter,
     logEvent, clearEvents,
-    selectMob, toggleAutoMode, setJoystick, useSkill, usePotion,
+    selectMob, toggleAutoMode, setJoystick, useSkill, usePotion, openEgg, tradeFragments,
     setAutoHealThreshold, setAutoManaThreshold, toggleAutoPotion,
     refreshPlayerStats,
     nextDemonSpawnRef: lastDemonSpawn,

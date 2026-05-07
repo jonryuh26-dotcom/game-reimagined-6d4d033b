@@ -261,7 +261,7 @@ export interface GroundItem {
   x: number;
   y: number;
   mapId: MapId;
-  kind: 'hp_potion' | 'mp_potion' | 'gold' | 'ruby';
+  kind: 'hp_potion' | 'mp_potion' | 'gold' | 'ruby' | 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic';
   amount?: number;
   expiresAt: number;
   bornAt: number;
@@ -375,7 +375,10 @@ export interface ShopItem {
   type: 'pet_chest' | 'planfy_egg' | 'send_zone' | 'rare_chest' | 'epic_chest' | 'legendary_chest';
 }
 
-export type InventoryItemType = 'teleport_scroll' | 'black_crystal' | 'hp_potion' | 'mp_potion';
+export type EggRarity = 'common' | 'rare' | 'magic' | 'epic' | 'legendary' | 'mythic';
+export type InventoryItemType =
+  | 'teleport_scroll' | 'black_crystal' | 'hp_potion' | 'mp_potion' | 'fragments'
+  | 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic';
 
 export interface InventoryItem {
   id: InventoryItemType;

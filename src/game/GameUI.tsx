@@ -36,6 +36,8 @@ interface GameUIProps {
   onSelectDarkMagePet: (petId: string | null) => void;
   onSetPetFilter: (filter: PetRarity | 'all') => void;
   onClearEvents: () => void;
+  onOpenEgg: (kind: 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic') => void;
+  onTradeFragments: (kind: 'hp_potion' | 'mp_potion') => void;
   nextDemonSpawnAt: number;
   onRefreshStats?: () => void;
 }
@@ -94,7 +96,9 @@ function GameUI({
   state, onTogglePetMenu, onToggleShop, onToggleTeleport, onToggleQuest,
   onToggleBossMenu, onToggleBag, onToggleDarkMage, onToggleReport, onToggleMenu,
   onTeleport, onBuyPetChest, onBuyChestType, onBuyPlanfyEgg, onAssignPet, onClaimQuest, onDismissAFK, onRevivePet,
-  onUseTeleportScroll, onDarkMageSendPet, onSelectDarkMagePet, onSetPetFilter, onClearEvents, nextDemonSpawnAt, onRefreshStats,
+  onUseTeleportScroll, onDarkMageSendPet, onSelectDarkMagePet, onSetPetFilter, onClearEvents,
+  onOpenEgg, onTradeFragments,
+  nextDemonSpawnAt, onRefreshStats,
 }: GameUIProps) {
   const { resources, currentMap, pets, level, xpPercent, quests, bag, alerts, petQuestRarityFilter, player } = state;
   const mapConfig = MAPS[currentMap];
@@ -687,52 +691,39 @@ function GameUI({
                 </div>
               )}
 
-              {/* SHOP TAB */}
+              {/* SHOP TAB — agora é loja de TROCA de fragmentos */}
               {tab === 'shop' && (
-                <div className="space-y-2 animate-fade-in">
-                  <div className="rounded-xl p-3" style={{ ...cardStyle, borderColor: 'hsl(280 60% 50%)' }}>
-                    <div className="text-center mb-2">
-                      <div className="text-2xl">🎁</div>
-                      <div className="text-white font-bold text-xs">Baú de Pet</div>
-                      <div className="text-gray-400 text-[9px]">Pet aleatório padrão</div>
+                <div className="space-y-3 animate-fade-in">
+                  <div className="rounded-xl p-3 text-center" style={{ ...cardStyle, borderColor: 'hsl(280 60% 50%)' }}>
+                    <div className="text-2xl mb-1">🔮</div>
+                    <div className="text-white font-bold text-xs">Loja de Troca</div>
+                    <div className="text-[9px] text-gray-400">Troque fragmentos de ovo por poções</div>
+                    <div className="text-[10px] mt-1" style={{ color: goldText }}>
+                      Você tem {(bag.find(i => i.id === 'fragments')?.count ?? 0)} 🔮
                     </div>
-                    <button
-                      className={`w-full py-2 rounded-lg text-[11px] font-bold ${
-                        resources.ruby >= PET_CHEST_COST_RUBY && resources.gold >= PET_CHEST_COST_GOLD ? 'bg-purple-600 text-white active:scale-95' : 'bg-gray-700 text-gray-500'
-                      }`}
-                      onClick={onBuyPetChest} disabled={resources.ruby < PET_CHEST_COST_RUBY || resources.gold < PET_CHEST_COST_GOLD}
-                    >🔴{PET_CHEST_COST_RUBY} + 🪙{PET_CHEST_COST_GOLD}</button>
                   </div>
-                  {[
-                    { type: 'rare_chest' as const, name: 'Baú Raro', cost: RARE_CHEST_COST, border: 'hsl(210 80% 55%)', bg: 'bg-blue-600' },
-                    { type: 'epic_chest' as const, name: 'Baú Épico', cost: EPIC_CHEST_COST, border: 'hsl(280 70% 60%)', bg: 'bg-purple-600' },
-                    { type: 'legendary_chest' as const, name: 'Baú Lendário', cost: LEGENDARY_CHEST_COST, border: 'hsl(30 90% 55%)', bg: 'bg-orange-600' },
-                  ].map(c => (
-                    <div key={c.type} className="rounded-xl p-3" style={{ ...cardStyle, borderColor: c.border }}>
-                      <div className="text-center mb-2">
-                        <div className="text-2xl">🎁</div>
-                        <div className="text-white font-bold text-xs">{c.name}</div>
+
+                  {([
+                    { id: 'hp_potion' as const, name: 'Poção de Vida', icon: '❤️', color: 'hsl(0 80% 55%)' },
+                    { id: 'mp_potion' as const, name: 'Poção de Mana', icon: '💧', color: 'hsl(210 90% 60%)' },
+                  ]).map(p => {
+                    const frags = bag.find(i => i.id === 'fragments')?.count ?? 0;
+                    const can = frags >= 10;
+                    return (
+                      <div key={p.id} className="rounded-xl p-3 flex items-center gap-3" style={{ ...cardStyle, borderColor: p.color }}>
+                        <div className="text-2xl">{p.icon}</div>
+                        <div className="flex-1">
+                          <div className="text-white font-bold text-[11px]">{p.name}</div>
+                          <div className="text-[9px] text-gray-400">10 🔮 → 1 {p.icon}</div>
+                        </div>
+                        <button
+                          className={`px-3 py-1.5 rounded-lg text-[11px] font-bold ${can ? 'bg-emerald-600 text-white active:scale-95' : 'bg-gray-700 text-gray-500'}`}
+                          onClick={() => onTradeFragments(p.id)}
+                          disabled={!can}
+                        >Trocar</button>
                       </div>
-                      <button
-                        className={`w-full py-2 rounded-lg text-[11px] font-bold ${
-                          resources.gold >= c.cost ? `${c.bg} text-white active:scale-95` : 'bg-gray-700 text-gray-500'
-                        }`}
-                        onClick={() => onBuyChestType(c.type)} disabled={resources.gold < c.cost}
-                      >🪙{c.cost.toLocaleString()}</button>
-                    </div>
-                  ))}
-                  <div className="rounded-xl p-3" style={{ ...cardStyle, borderColor: 'hsl(330 70% 60%)' }}>
-                    <div className="text-center mb-2">
-                      <div className="text-2xl">🥚</div>
-                      <div className="text-pink-300 font-bold text-xs">Ovo Planfy Healer</div>
-                    </div>
-                    <button
-                      className={`w-full py-2 rounded-lg text-[11px] font-bold ${
-                        resources.ruby >= PLANFY_NEW_RUBY_COST && resources.gold >= PLANFY_NEW_GOLD_COST ? 'bg-pink-600 text-white active:scale-95' : 'bg-gray-700 text-gray-500'
-                      }`}
-                      onClick={onBuyPlanfyEgg} disabled={resources.ruby < PLANFY_NEW_RUBY_COST || resources.gold < PLANFY_NEW_GOLD_COST}
-                    >🔴{PLANFY_NEW_RUBY_COST} + 🪙{PLANFY_NEW_GOLD_COST.toLocaleString()}</button>
-                  </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -768,6 +759,14 @@ function GameUI({
                             ))}
                           </div>
                         </div>
+                      )}
+                      {item.id.startsWith('egg_') && (
+                        <button
+                          className="w-full py-1.5 rounded bg-amber-600 text-white text-[10px] font-bold active:scale-95"
+                          onClick={() => onOpenEgg(item.id as 'egg_common')}
+                        >
+                          Abrir Ovo 🥚
+                        </button>
                       )}
                     </div>
                   ))}

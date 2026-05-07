@@ -35,7 +35,7 @@ export default function GameCanvas() {
     gameState, setTarget, interactWithChest, collectEffects,
     teleportToMap, toggleUI, buyPetChest, buyChestType, buyPlanfyEgg, assignPetToMap,
     claimQuest, dismissAFK, revivePet, useTeleportScroll, darkMageSendPet, selectDarkMagePet, setPetFilter,
-    clearEvents,
+    clearEvents, openEgg, tradeFragments,
     selectMob, toggleAutoMode, setJoystick, useSkill, usePotion,
     setAutoHealThreshold, setAutoManaThreshold, toggleAutoPotion,
     refreshPlayerStats,
@@ -180,7 +180,7 @@ export default function GameCanvas() {
         }
       });
 
-      if (gameState.chestOpened) drawCreature(ctx, gameState.creature, cam, time);
+      // creature inicial removida — não há mais pet inicial do baú
 
       gameState.pets.forEach(pet => {
         if (pet.assignedMap === currentMapId && pet.state !== 'idle') drawPet(ctx, pet, cam, time);
@@ -235,12 +235,27 @@ export default function GameCanvas() {
         if (gi.mapId !== currentMapId) return;
         const bob = Math.sin(time * 0.005 + gi.x) * 2;
         ctx.save();
-        const color = gi.kind === 'hp_potion' ? '#ef4444' : gi.kind === 'mp_potion' ? '#3b82f6' : gi.kind === 'gold' ? '#fbbf24' : '#ef4444';
+        const isEgg = gi.kind.startsWith('egg_');
+        const eggColor =
+          gi.kind === 'egg_common' ? '#e5e7eb' :
+          gi.kind === 'egg_rare' ? '#22c55e' :
+          gi.kind === 'egg_magic' ? '#3b82f6' :
+          gi.kind === 'egg_epic' ? '#a855f7' :
+          gi.kind === 'egg_legendary' ? '#ef4444' :
+          gi.kind === 'egg_mythic' ? '#fbbf24' : '#fff';
+        const color = isEgg ? eggColor : (gi.kind === 'hp_potion' ? '#ef4444' : gi.kind === 'mp_potion' ? '#3b82f6' : gi.kind === 'gold' ? '#fbbf24' : '#ef4444');
+        if (isEgg) {
+          const pulse = 0.4 + Math.sin(time * 0.005) * 0.25;
+          ctx.globalAlpha = pulse;
+          ctx.fillStyle = color;
+          ctx.beginPath(); ctx.arc(gi.x, gi.y + bob, 16, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+        }
         ctx.shadowColor = color;
-        ctx.shadowBlur = 10;
-        ctx.font = '16px serif';
+        ctx.shadowBlur = isEgg ? 16 : 10;
+        ctx.font = isEgg ? '20px serif' : '16px serif';
         ctx.textAlign = 'center';
-        const icon = gi.kind === 'hp_potion' ? '🧪' : gi.kind === 'mp_potion' ? '💧' : gi.kind === 'gold' ? '🪙' : '💎';
+        const icon = isEgg ? '🥚' : (gi.kind === 'hp_potion' ? '🧪' : gi.kind === 'mp_potion' ? '💧' : gi.kind === 'gold' ? '🪙' : '💎');
         ctx.fillText(icon, gi.x, gi.y + bob);
         ctx.restore();
       });
@@ -330,6 +345,8 @@ export default function GameCanvas() {
         onSelectDarkMagePet={selectDarkMagePet}
         onSetPetFilter={setPetFilter}
         onClearEvents={clearEvents}
+        onOpenEgg={openEgg}
+        onTradeFragments={tradeFragments}
         nextDemonSpawnAt={nextDemonSpawnRef.current + DEMON_SPAWN_INTERVAL}
         onRefreshStats={refreshPlayerStats}
       />
