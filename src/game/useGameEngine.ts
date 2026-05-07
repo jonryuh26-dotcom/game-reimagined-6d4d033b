@@ -59,24 +59,9 @@ function createCoins(mapId: MapId): Coin[] {
   }));
 }
 
-function createWalkingNPCs(mapId: MapId): WalkingNPC[] {
-  const map = MAPS[mapId];
-  const now = Date.now();
-  return map.npcPositions.map((pos, i) => ({
-    id: `npc_${mapId}_${i}`,
-    x: pos.x, y: pos.y,
-    mapId,
-    name: NPC_NAMES[i % NPC_NAMES.length],
-    direction: 'down' as const,
-    animFrame: 0,
-    targetX: pos.x + (Math.random() - 0.5) * 100,
-    targetY: pos.y + (Math.random() - 0.5) * 100,
-    moveTimer: now + Math.random() * 5000,
-    hasQuest: true,
-    color: NPC_COLORS[i % NPC_COLORS.length],
-    isHostile: i === 0, // primeiro NPC do mapa é hostil
-    hostilityTimer: now + HOSTILE_NPC_PUNISH_INTERVAL,
-  }));
+function createWalkingNPCs(_mapId: MapId): WalkingNPC[] {
+  // NPCs com quest que andam pelo mapa foram removidos.
+  return [];
 }
 
 const INITIAL_BAG: InventoryItem[] = [
@@ -84,6 +69,13 @@ const INITIAL_BAG: InventoryItem[] = [
   { id: 'black_crystal', name: 'Cristal Negro', icon: '🖤', count: 0 },
   { id: 'hp_potion', name: 'Poção de Vida', icon: '❤️', count: 8 },
   { id: 'mp_potion', name: 'Poção de Mana', icon: '💧', count: 5 },
+  { id: 'fragments', name: 'Fragmentos de Ovo', icon: '🔮', count: 0 },
+  { id: 'egg_common', name: 'Ovo Comum', icon: '🥚', count: 0 },
+  { id: 'egg_rare', name: 'Ovo Raro', icon: '🥚', count: 0 },
+  { id: 'egg_magic', name: 'Ovo Mágico', icon: '🥚', count: 0 },
+  { id: 'egg_epic', name: 'Ovo Épico', icon: '🥚', count: 0 },
+  { id: 'egg_legendary', name: 'Ovo Lendário', icon: '🥚', count: 0 },
+  { id: 'egg_mythic', name: 'Ovo Mítico', icon: '🥚', count: 0 },
 ];
 
 function variantFromKind(kind: MobKind): 'normal' | 'elite' | 'corrupted' | 'alpha' | 'dragon_emerald' | 'dragon_crimson' | 'wolf' | 'boar' | 'fairy' | 'char_orange' | 'char_blue' | 'char_obsidian' {
