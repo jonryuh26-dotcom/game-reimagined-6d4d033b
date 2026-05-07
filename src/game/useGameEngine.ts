@@ -262,19 +262,26 @@ export function useGameEngine(viewW: number, viewH: number) {
         bornAt: now, expiresAt: now + 60000,
       });
     }
-    // Egg drop (rare): rolls independently
-    const eggChance = mob.variant === 'alpha' ? 0.08 : mob.variant === 'corrupted' ? 0.04 : mob.variant === 'elite' ? 0.02 : 0.006;
-    if (Math.random() < eggChance) {
+    // Egg drop: chance escala com nível do mob
+    const baseEgg = mob.variant === 'alpha' ? 0.10 : mob.variant === 'corrupted' ? 0.06 : mob.variant === 'elite' ? 0.04 : 0.015;
+    const lvBonus = Math.min(0.20, mob.level * 0.004);
+    if (Math.random() < baseEgg + lvBonus) {
       const r = Math.random();
       const tier =
-        r < 0.5 ? { id: 'common', name: 'Comum', color: '#e5e7eb', emoji: '🥚' } :
-        r < 0.78 ? { id: 'rare', name: 'Raro', color: '#22c55e', emoji: '🥚' } :
-        r < 0.92 ? { id: 'magic', name: 'Mágico', color: '#3b82f6', emoji: '🥚' } :
-        r < 0.98 ? { id: 'epic', name: 'Épico', color: '#a855f7', emoji: '🥚' } :
-        r < 0.997 ? { id: 'legendary', name: 'Lendário', color: '#ef4444', emoji: '🥚' } :
-                    { id: 'mythic', name: 'Mítico', color: '#fbbf24', emoji: '🥚' };
-      const playerName = (typeof window !== 'undefined' && localStorage.getItem('ryuzen-name')) || 'Você';
-      queueEvent('item_drop', `🔥 ${playerName} encontrou um Ovo Dracônico ${tier.name}!`, tier.emoji, tier.color);
+        r < 0.50 ? { id: 'egg_common',    label: 'Comum',     color: '#e5e7eb' } :
+        r < 0.78 ? { id: 'egg_rare',      label: 'Raro',      color: '#22c55e' } :
+        r < 0.92 ? { id: 'egg_magic',     label: 'Mágico',    color: '#3b82f6' } :
+        r < 0.98 ? { id: 'egg_epic',      label: 'Épico',     color: '#a855f7' } :
+        r < 0.997 ? { id: 'egg_legendary', label: 'Lendário', color: '#ef4444' } :
+                    { id: 'egg_mythic',    label: 'Mítico',    color: '#fbbf24' };
+      pendingDropsRef.current.push({
+        id: `gi_egg_${now}_${Math.random().toString(36).slice(2,6)}`,
+        x: mob.x + (Math.random() - 0.5) * 16,
+        y: mob.y + (Math.random() - 0.5) * 16,
+        mapId, kind: tier.id as GroundItem['kind'],
+        bornAt: now, expiresAt: now + 90000,
+      });
+      queueEvent('item_drop', `🥚 Ovo ${tier.label} dropou!`, '🥚', tier.color);
     }
   };
 
