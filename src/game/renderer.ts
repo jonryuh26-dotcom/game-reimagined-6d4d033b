@@ -1,28 +1,11 @@
 import { Coin, Creature, Player, Pet, MapChest, Demon, WalkingNPC, Boss } from './types';
 import { RARITY_COLORS } from './mapData';
+import { drawAvatar } from './avatar';
 
-export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, camera: { x: number; y: number }) {
+export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, camera: { x: number; y: number }, time = 0) {
   const sx = player.x - camera.x;
   const sy = player.y - camera.y;
-  ctx.save();
-  ctx.fillStyle = '#3b82f6';
-  ctx.fillRect(sx - 6, sy - 12, 12, 14);
-  ctx.fillStyle = '#fbbf24';
-  ctx.fillRect(sx - 5, sy - 20, 10, 10);
-  ctx.fillStyle = '#92400e';
-  ctx.fillRect(sx - 6, sy - 22, 12, 5);
-  ctx.fillStyle = '#1e293b';
-  if (player.direction === 'down') { ctx.fillRect(sx - 3, sy - 17, 2, 2); ctx.fillRect(sx + 1, sy - 17, 2, 2); }
-  else if (player.direction === 'left') { ctx.fillRect(sx - 4, sy - 17, 2, 2); }
-  else if (player.direction === 'right') { ctx.fillRect(sx + 2, sy - 17, 2, 2); }
-  const legOffset = player.moving ? Math.sin(player.animFrame * 0.3) * 3 : 0;
-  ctx.fillStyle = '#1e40af';
-  ctx.fillRect(sx - 4, sy + 2, 4, 6);
-  ctx.fillRect(sx, sy + 2 + legOffset, 4, 6);
-  ctx.fillStyle = '#7c2d12';
-  ctx.fillRect(sx - 5, sy + 7, 5, 3);
-  ctx.fillRect(sx, sy + 7 + legOffset, 5, 3);
-  ctx.restore();
+  drawAvatar(ctx, sx, sy, player.direction, player.moving, player.animFrame, time);
 }
 
 export function drawCoin(ctx: CanvasRenderingContext2D, coin: Coin, camera: { x: number; y: number }, time: number) {
