@@ -420,7 +420,56 @@ export function useGameEngine(viewW: number, viewH: number) {
     });
   }, []);
 
-  const setPetFilter = useCallback((filter: PetRarity | 'all') => {
+  // Abre um ovo: comum SEMPRE falha (recebe fragmentos). Outros: chance crescente.
+  const openEgg = useCallback((kind: 'egg_common' | 'egg_rare' | 'egg_magic' | 'egg_epic' | 'egg_legendary' | 'egg_mythic') => {
+    setGameState(prev => {
+      const slot = prev.bag.find(i => i.id === kind);
+      if (!slot || slot.count <= 0) return prev;
+
+      const successChance: Record<string, number> = {
+        egg_common: 0, egg_rare: 0.45, egg_magic: 0.65, egg_epic: 0.80, egg_legendary: 0.92, egg_mythic: 1.0,
+      };
+      const fragmentReward: Record<string, number> = {
+        egg_common: 1, egg_rare: 3, egg_magic: 5, egg_epic: 8, egg_legendary: 14, egg_mythic: 25,
+      };
+      const rarityWeights: Record<string, Partial<Record<PetRarity, number>>> = {
+        egg_common:    { common: 100 },
+        egg_rare:      { common: 60, rare: 40 },
+        egg_magic:     { common: 35, rare: 50, epic: 15 },
+        egg_epic:      { rare: 35, epic: 50, legendary: 15 },
+        egg_legendary: { epic: 40, legendary: 60 },
+        egg_mythic:    { epic: 20, legendary: 80 },
+      };
+
+      const success = Math.random() < successChance[kind];
+      const newBag = prev.bag.map(i => i.id === kind ? { ...i, count: i.count - 1 } : i);
+      if (!success) {
+        const frags = fragmentReward[kind];
+        const fragSlot = newBag.find(i => i.id === 'fragments');
+        if (fragSlot) fragSlot.count += frags;
+        queueEvent('item_drop', `Ovo falhou! Recebeu ${frags} fragmentos 🔮`, '🔮', '#a855f7');
+        return { ...prev, bag: newBag };
+      }
+      const newPet = rollGachaPet(prev.player, rarityWeights[kind] as Record<PetRarity, number>);
+      queueEvent('pet_acquired', `🥚→🐾 ${newPet.name} (${newPet.rarity})`, '🐾', '#a78bfa');
+      return { ...prev, bag: newBag, pets: [...prev.pets, newPet] };
+    });
+  }, []);
+
+  // Troca fragmentos por poções (10 frags = 1 poção)
+  const tradeFragments = useCallback((kind: 'hp_potion' | 'mp_potion') => {
+    setGameState(prev => {
+      const fragSlot = prev.bag.find(i => i.id === 'fragments');
+      if (!fragSlot || fragSlot.count < 10) return prev;
+      const newBag = prev.bag.map(i =>
+        i.id === 'fragments' ? { ...i, count: i.count - 10 } :
+        i.id === kind ? { ...i, count: i.count + 1 } : i
+      );
+      queueEvent('item_drop', `Trocou 10 fragmentos por ${kind === 'hp_potion' ? 'poção de vida' : 'poção de mana'}`, '🔮', '#22c55e');
+      return { ...prev, bag: newBag };
+    });
+  }, []);
+
     setGameState(prev => ({ ...prev, petQuestRarityFilter: filter }));
   }, []);
 
