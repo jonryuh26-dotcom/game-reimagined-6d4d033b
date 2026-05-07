@@ -254,9 +254,11 @@ export const MAPS: Record<MapId, MapConfig> = {
     walkableZones: [{ x: 0, y: 0, w: VILLAGE_WIDTH, h: VILLAGE_HEIGHT }],
     collisionZones: [],
     waterZones: [],
-    // Escada para o subterrâneo (canto superior central da vila)
+    // Escadas e portais — sempre no lado DIREITO do mapa, longe dos cantos clicáveis
     stairs: [
-      { x: 760, y: 320, targetMap: 'underground_1', targetX: 480, targetY: 1180, label: '🪜 Subterrâneo I' },
+      { x: VILLAGE_WIDTH - 220, y: VILLAGE_HEIGHT / 2 - 200, targetMap: 'underground_1', targetX: 480, targetY: 1180, label: '🪜 Subterrâneo I' },
+      { x: VILLAGE_WIDTH - 220, y: VILLAGE_HEIGHT / 2,        targetMap: 'purplewilds',  targetX: 480, targetY: 1100, label: '🌌 Bosque Sombrio' },
+      { x: VILLAGE_WIDTH - 220, y: VILLAGE_HEIGHT / 2 + 200, targetMap: 'infernal',     targetX: 480, targetY: 1100, label: '🔥 Reino Infernal' },
     ],
     npcPositions: [{ x: VILLAGE_WIDTH / 2 - 80, y: VILLAGE_HEIGHT / 2 + 80 }, { x: VILLAGE_WIDTH / 2 + 200, y: VILLAGE_HEIGHT / 2 - 200 }],
     demonSpawns: genDemonSpawns(14, 250, VILLAGE_WIDTH - 250, 250, VILLAGE_HEIGHT - 250),
